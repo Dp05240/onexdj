@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Event Schedule - One X DJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Base Styles */
+        :root {
+            --primary: #e91e63;
+            --primary-dark: #c2185b;
+            --dark: #1a1a1a;
+            --card-bg: #000000;
+            --text-dark: #ffffff;
+            --text-light: #ffffff;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            --border-color: #333333;
+            --input-bg: #212121;
+            --text-secondary: #b0b0b0;
+            --status-confirmed: #34C759;
+            --status-pending: #FF9500;
+            --status-completed: #007AFF;
+            --status-quoted: #FF3B30;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--dark);
+            min-height: 100vh;
+            color: var(--text-dark);
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            background-color: var(--dark);
+            color: var(--text-light);
+            padding: 10px;
+            text-align: center;
+            width: 100%;
+            max-width: 430px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Event Details */
+        .event-details {
+            padding: 1rem;
+            color: var(--text-dark);
+        }
+
+        .event-details h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .event-meta i {
+            color: var(--primary);
+        }
+
+        .event-team {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .event-team i {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 1rem;
+        }
+
+        .section h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .section-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-card p {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }
+
+        .section-card .cue-link {
+            font-size: 0.8rem;
+            color: var(--primary);
+            margin-top: 0.25rem;
+        }
+
+        .section-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .section-item {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .section-item p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .note {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Event Agenda</h1>
+    </div>
+
+    <div class="container">
+        <div class="event-details" id="eventDetails"></div>
+
+        <div class="section" id="scheduleSection">
+            <h3>Schedule</h3>
+            <div id="scheduleList"></div>
+        </div>
+
+        <div class="section" id="cueSection">
+            <h3>Cues</h3>
+            <div id="cueList" class="section-list"></div>
+        </div>
+
+        <div class="note">
+            Please review the agenda and contact your DJ/host to confirm or suggest changes.
+        </div>
+    </div>
+
+    <script>
+        // Event data (same as in event_detail.html)
+        const eventData = {
+            '1': { name: 'Wedding Celebration', id: 'WED00001', date: '2025-04-15', time: '16:00 - 21:00', venue: 'Grand Hall', client: 'John Doe', status: 'Confirmed', team: 'DJ Alex, Lighting Tech Bob' },
+            '2': { name: 'Baby Shower', id: 'BAB00002', date: '2025-04-20', time: '14:00 - 18:00', venue: 'Community Center', client: 'Jane Smith', status: 'Pending', team: 'DJ Sarah, Tech Mike' },
+            '3': { name: 'Baarat Ceremony', id: 'BAA00003', date: '2025-03-30', time: '18:00 - 22:00', venue: 'Temple Grounds', client: 'Ravi Patel', status: 'Completed', team: 'DJ Priya, Tech Anil' },
+            '4': { name: 'Club Night Special', id: 'CLU00004', date: '2025-04-25', time: '20:00 - 23:00', venue: 'Club Nexus', client: 'Mike Johnson', status: 'Quoted', team: 'DJ Mark, Tech Lisa' },
+            '5': { name: 'Corporate Gala', id: 'COR00005', date: '2025-05-01', time: '19:00 - 22:00', venue: 'City Convention Center', client: 'Tech Corp', status: 'Pending', team: 'DJ Emma, Tech Sam' },
+            '6': { name: 'Smith Wedding', id: 'WED00006', date: '2025-05-10', time: '17:00 - 22:00', venue: 'Riverside Gardens', client: 'Emily Smith', status: 'Confirmed', team: 'DJ Tom, Tech Rachel' },
+            '7': { name: 'Patel Baarat', id: 'BAA00007', date: '2025-05-15', time: '15:00 - 20:00', venue: 'City Park', client: 'Amit Patel', status: 'Quoted', team: 'DJ Neil, Tech Karen' }
+        };
+
+        // Schedule data (same as in event_detail.html)
+        const scheduleData = {
+            '1': [
+                { title: 'Ceremony', time: '18:00 - 18:30', cueLink: '01', private: false },
+                { title: 'Dinner', time: '18:30 - 19:30', cueLink: '02', private: false },
+                { title: 'Dance Party', time: '19:30 - 22:30', cueLink: '03', private: false }
+            ],
+            '2': [
+                { title: 'Welcome', time: '14:00 - 14:15', cueLink: 'None', private: false },
+                { title: 'Games', time: '14:15 - 15:30', cueLink: 'None', private: false },
+                { title: 'Gift Opening', time: '15:30 - 16:00', cueLink: 'None', private: false }
+            ],
+            '3': [
+                { title: 'Procession', time: '18:00 - 19:00', cueLink: 'None', private: false },
+                { title: 'Ceremony', time: '19:00 - 20:00', cueLink: 'None', private: false },
+                { title: 'Celebration', time: '20:00 - 22:00', cueLink: 'None', private: false }
+            ],
+            '4': [
+                { title: 'Doors Open', time: '20:00 - 20:30', cueLink: 'None', private: false },
+                { title: 'Main Set', time: '20:30 - 22:30', cueLink: 'None', private: false },
+                { title: 'Closing', time: '22:30 - 23:00', cueLink: 'None', private: false }
+            ],
+            '5': [
+                { title: 'Reception', time: '19:00 - 19:30', cueLink: 'None', private: false },
+                { title: 'Dinner', time: '19:30 - 20:30', cueLink: 'None', private: false },
+                { title: 'Speeches', time: '20:30 - 22:00', cueLink: 'None', private: false }
+            ],
+            '6': [
+                { title: 'Ceremony', time: '17:00 - 17:30', cueLink: 'None', private: false },
+                { title: 'Reception', time: '17:30 - 18:30', cueLink: 'None', private: false },
+                { title: 'Dance Party', time: '18:30 - 22:00', cueLink: 'None', private: false }
+            ],
+            '7': [
+                { title: 'Procession', time: '15:00 - 16:00', cueLink: 'None', private: false },
+                { title: 'Ceremony', time: '16:00 - 17:00', cueLink: 'None', private: false },
+                { title: 'Celebration', time: '17:00 - 20:00', cueLink: 'None', private: false }
+            ]
+        };
+
+        // Cue data with share field (same as in event_detail.html)
+        const cueData = {
+            '1': [
+                { name: 'Intro Song at 18:05, 00:30', number: '01', share: true },
+                { name: 'First Dance Song at 19:00, 01:15', number: '02', share: true },
+                { name: 'Cake Cutting Song at 20:00, 02:00', number: '03', share: true }
+            ],
+            '2': [],
+            '3': [],
+            '4': [],
+            '5': [],
+            '6': [],
+            '7': []
+        };
+
+        // Load event details
+        function loadEventDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('eventId') || '1'; // Default to '1' if no ID provided
+            const event = eventData[eventId];
+            if (event) {
+                document.getElementById('eventDetails').innerHTML = `
+                    <h2>${event.name}</h2>
+                    <div class="event-meta">
+                        <div><i class="fas fa-calendar-alt"></i> ${event.date}</div>
+                        <div><i class="fas fa-clock"></i> ${event.time}</div>
+                    </div>
+                    <div class="event-meta">
+                        <div><i class="fas fa-map-marker-alt"></i> ${event.venue}</div>
+                    </div>
+                    <div class="event-team">
+                        Status: ${event.status}
+                    </div>
+                `;
+            } else {
+                document.getElementById('eventDetails').innerHTML = '<p>Event not found</p>';
+            }
+        }
+
+        // Load schedule (exclude private items)
+        function loadSchedule() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('eventId') || '1';
+            const schedule = scheduleData[eventId] || [];
+            const scheduleList = document.getElementById('scheduleList');
+
+            // Filter out private schedule items
+            const publicSchedule = schedule.filter(item => !item.private);
+
+            if (publicSchedule.length === 0) {
+                scheduleList.innerHTML = '<p>No schedule items found.</p>';
+                return;
+            }
+
+            publicSchedule.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'section-card';
+                div.innerHTML = `
+                    <h4>${item.title}</h4>
+                    <p>${item.time}</p>
+                    <div class="cue-link">Cue Link: ${item.cueLink}</div>
+                `;
+                scheduleList.appendChild(div);
+            });
+        }
+
+        // Load cues (only show items marked as share: true)
+        function loadCues() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('eventId') || '1';
+            const cues = cueData[eventId] || [];
+            const cueList = document.getElementById('cueList');
+
+            // Filter cues to only include those marked for sharing
+            const sharedCues = cues.filter(cue => cue.share);
+
+            if (sharedCues.length === 0) {
+                cueList.innerHTML = '<div class="section-item"><p>No cues assigned.</p></div>';
+                return;
+            }
+
+            sharedCues.forEach(cue => {
+                const div = document.createElement('div');
+                div.className = 'section-item';
+                div.innerHTML = `<p>${cue.number}: ${cue.name}</p>`;
+                cueList.appendChild(div);
+            });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEventDetails();
+            loadSchedule();
+            loadCues();
+        });
+    </script>
+</body>
+</html>

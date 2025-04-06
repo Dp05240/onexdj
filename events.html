@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Events - One X DJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #e91e63;
+            --primary-dark: #c2185b;
+            --dark: #1a1a1a;
+            --card-bg: #1a1a1a;
+            --text-dark: #ffffff;
+            --text-light: #ffffff;
+            --text-secondary: #b0b0b0;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            --neumorphic-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2), -5px -5px 10px rgba(255, 255, 255, 0.05);
+            --border-color: #333333;
+            --input-bg: #212121;
+            --status-confirmed: #34C759;
+            --status-pending: #FF9500;
+            --status-completed: #007AFF;
+            --status-quoted: #FF3B30;
+            --loaded-bg: rgba(52, 199, 89, 0.1);
+            --partial-bg: rgba(255, 149, 0, 0.1);
+            --error-color: #FF3B30;
+            --gradient-bg: linear-gradient(135deg, #e91e63, #c2185b);
+            --button-edit: rgba(74, 144, 226, 0.9);
+            --button-load: rgba(255, 170, 51, 0.9);
+            --button-tasks: rgba(52, 199, 89, 0.9);
+            --button-bulk: rgba(255, 45, 85, 0.9);
+            --inventory-modal-bg: #212121;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            color: var(--text-dark);
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        .header {
+            background-color: var(--dark);
+            color: var(--text-light);
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            max-width: 430px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            padding: 4rem 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .search-box {
+            padding: 0.75rem;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
+        }
+
+        .sort-button {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+
+        .sort-menu {
+            display: none;
+            position: absolute;
+            right: 0.75rem;
+            top: 100%;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--neumorphic-shadow);
+            z-index: 10;
+        }
+
+        .sort-menu.active {
+            display: block;
+        }
+
+        .sort-menu button {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            text-align: left;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .sort-menu button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 0.5rem;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            gap: 0.5rem;
+        }
+
+        .filter-nav button {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .filter-nav button.active {
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .create-event {
+            background: var(--gradient-bg);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            text-align: center;
+            box-shadow: var(--neumorphic-shadow);
+        }
+
+        .create-event:hover {
+            transform: scale(1.02);
+        }
+
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .event-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--neumorphic-shadow);
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .event-card:hover {
+            transform: scale(1.01);
+        }
+
+        .event-card-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .event-card-body {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            line-height: 1.4;
+        }
+
+        .event-card-body span {
+            color: #b0b0b0;
+        }
+
+        .event-card-body .event-details {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .days-left {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: var(--status-pending);
+            color: var(--text-light);
+            border-radius: 12px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-bar {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 0.75rem;
+            width: 100%;
+        }
+
+        .status-confirmed { background-color: var(--status-confirmed); }
+        .status-pending { background-color: var(--status-pending); }
+        .status-completed { background-color: var(--status-completed); }
+        .status-quoted { background-color: var(--status-quoted); }
+
+        .event-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .event-actions .btn {
+            flex: 1;
+        }
+
+        .btn {
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            min-height: 44px;
+            box-shadow: var(--neumorphic-shadow);
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+        }
+
+        .btn-edit {
+            background-color: var(--button-edit);
+        }
+
+        .btn-edit:hover {
+            background-color: rgba(74, 144, 226, 1);
+        }
+
+        .btn-load {
+            background-color: var(--button-load);
+        }
+
+        .btn-load:hover {
+            background-color: rgba(255, 170, 51, 1);
+        }
+
+        .btn-tasks {
+            background-color: var(--button-tasks);
+        }
+
+        .btn-tasks:hover {
+            background-color: rgba(52, 199, 89, 1);
+        }
+
+        .btn-bulk {
+            background-color: var(--button-bulk);
+        }
+
+        .btn-bulk:hover {
+            background-color: rgba(255, 45, 85, 1);
+        }
+
+        .bottom-nav {
+            background: var(--dark);
+            color: var(--text-light);
+            display: flex;
+            padding: 0.5rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            width: 90%;
+            max-width: 390px;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: var(--neumorphic-shadow);
+            color: var(--text-dark);
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .modal-progress {
+            font-size: 16px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-progress .loaded-units, .modal-progress .loaded-items {
+            color: var(--status-confirmed);
+        }
+
+        .modal-search {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .modal-search input {
+            width: 100%;
+            padding: 0.75rem 2.5rem 0.75rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+        }
+
+        .modal-search input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
+        }
+
+        .modal-search .camera-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        .modal-search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--neumorphic-shadow);
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .modal-search-suggestions.active {
+            display: block;
+        }
+
+        .modal-search-suggestions div {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+
+        .modal-search-suggestions div:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-scan {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .modal-scan .btn {
+            background: var(--button-edit);
+            padding: 0.75rem 1.5rem;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-scan .scan-animation {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+
+        .modal-scan .scan-animation.active {
+            display: flex;
+        }
+
+        .modal-scan .scan-barcode {
+            width: 80%;
+            height: 20px;
+            background: repeating-linear-gradient(
+                90deg,
+                #fff 0px,
+                #fff 2px,
+                transparent 2px,
+                transparent 4px
+            );
+            position: relative;
+        }
+
+        .modal-scan .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 100%;
+            background-color: var(--primary);
+            animation: scan 1.5s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { left: 0; }
+            50% { left: calc(100% - 2px); }
+            100% { left: 0; }
+        }
+
+        .modal-error {
+            color: var(--error-color);
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .modal-error.active {
+            display: block;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .equipment-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .equipment-item {
+            display: flex;
+            flex-direction: column;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+            position: relative;
+            touch-action: none;
+        }
+
+        .equipment-item.loaded {
+            background-color: var(--loaded-bg);
+        }
+
+        .equipment-item.partial {
+            background-color: var(--partial-bg);
+        }
+
+        .equipment-item:last-child {
+            border-bottom: none;
+        }
+
+        .equipment-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .equipment-details {
+            flex: 1;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .equipment-details .icon-wrapper {
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+
+        .equipment-details .icon {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .equipment-details .progress-circle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24px;
+            height: 24px;
+        }
+
+        .equipment-details .progress-circle circle {
+            fill: none;
+            stroke: var(--status-confirmed);
+            stroke-width: 2;
+            stroke-dasharray: 62.8;
+            stroke-dashoffset: 62.8;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .equipment-details .quantity {
+            color: var(--text-secondary);
+        }
+
+        .equipment-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .equipment-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 14px;
+        }
+
+        .equipment-status.loaded {
+            color: #34C759;
+        }
+
+        .equipment-status.partial {
+            color: #FF9500;
+        }
+
+        .status-icon {
+            font-size: 1rem;
+        }
+
+        .add-btn, .undo-btn {
+            background-color: #34C759;
+            color: var(--text-light);
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            min-height: 44px;
+        }
+
+        .add-btn:hover, .undo-btn:hover {
+            background-color: #2db74f;
+        }
+
+        .add-btn.loaded {
+            background-color: #888888;
+            cursor: default;
+        }
+
+        .undo-btn {
+            background-color: #FF9500;
+        }
+
+        .undo-btn:hover {
+            background-color: #e68a00;
+        }
+
+        .quantity-input {
+            display: none;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background-color: var(--input-bg);
+            border-radius: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .quantity-input.active {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quantity-input .error {
+            color: var(--error-color);
+            font-size: 14px;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .quantity-input .error.active {
+            display: block;
+        }
+
+        .quantity-input input {
+            width: 60px;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        .quantity-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
+        }
+
+        .quantity-input .btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 14px;
+        }
+
+        .quantity-input .adjust-btn {
+            background-color: var(--primary);
+            padding: 0.5rem;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .quantity-input .adjust-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .bulk-load-section {
+            display: none;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: var(--input-bg);
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .bulk-load-section.active {
+            display: block;
+        }
+
+        .bulk-load-header {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+
+        .bulk-load-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: var(--neumorphic-shadow);
+            background-color: var(--card-bg);
+        }
+
+        .bulk-load-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .bulk-load-item .item-details {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .bulk-load-item .item-details .icon {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .bulk-load-item input {
+            width: 60px;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        .bulk-load-quick {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .bulk-load-quick label {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .bulk-load-quick select {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .bulk-load-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .bulk-load-buttons .btn {
+            flex: 1;
+        }
+
+        .modal-footer {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .modal-footer .btn {
+            width: 100%;
+        }
+
+        .inventory-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .inventory-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .inventory-modal-content {
+            background-color: var(--inventory-modal-bg);
+            width: 90%;
+            max-width: 390px;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: var(--neumorphic-shadow);
+            color: var(--text-dark);
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .inventory-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .inventory-item:last-child {
+            border-bottom: none;
+        }
+
+        .inventory-details {
+            flex: 1;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .inventory-details .icon-wrapper {
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+
+        .inventory-details .icon {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .inventory-details .progress-circle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24px;
+            height: 24px;
+        }
+
+        .inventory-details .progress-circle circle {
+            fill: none;
+            stroke: var(--status-confirmed);
+            stroke-width: 2;
+            stroke-dasharray: 62.8;
+            stroke-dashoffset: 62.8;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .inventory-status {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .inventory-status.loaded {
+            color: #34C759;
+        }
+
+        .inventory-status.partial {
+            color: #FF9500;
+        }
+
+        .task-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .task-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .task-modal-content {
+            background-color: var(--card-bg);
+            width: 90%;
+            max-width: 390px;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: var(--neumorphic-shadow);
+            color: var(--text-dark);
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-item input[type="checkbox"] {
+            margin-right: 0.75rem;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .task-text.completed {
+            text-decoration: line-through;
+            color: #888888;
+        }
+
+        .swipe-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .swipe-hint.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Events</h1>
+    </div>
+
+    <div class="container">
+        <div class="search-box">
+            <input type="text" placeholder="Search Events..." oninput="searchEvents()">
+            <button class="sort-button" onclick="toggleSortMenu()">Sort ▼</button>
+            <div class="sort-menu" id="sortMenu">
+                <button onclick="sortEvents('date-asc')">Date (Soonest First)</button>
+                <button onclick="sortEvents('date-desc')">Date (Latest First)</button>
+                <button onclick="sortEvents('status')">Status</button>
+            </div>
+        </div>
+
+        <div class="filter-nav">
+            <button class="active" onclick="filterEvents('all')">All</button>
+            <button onclick="filterEvents('Wedding')">Weddings</button>
+            <button onclick="filterEvents('Baby Shower')">Baby Showers</button>
+            <button onclick="filterEvents('Baarat')">Baarats</button>
+            <button onclick="filterEvents('Club Night')">Club Nights</button>
+            <button onclick="filterEvents('Corporate')">Corporate</button>
+            <button onclick="filterEvents('Quoted')">Quoted</button>
+        </div>
+
+        <button class="create-event" onclick="window.location.href='createEvent.html'">Create Event</button>
+
+        <div class="event-list" id="eventList">
+            <div class="event-card" data-id="1" data-type="Wedding" data-status="Confirmed" data-date="2025-04-15" data-days-left="13">
+                <div class="event-card-header">Wedding Celebration</div>
+                <div class="event-card-body">
+                    Event ID: <span>WED00001</span><br>
+                    Date: <span>2025-04-15</span><br>
+                    Time: <span>16:00</span><br>
+                    Venue: <span>Grand Hall</span><br>
+                    Client: <span>John Doe</span><br>
+                    Status: <span>Confirmed</span><br>
+                    <div class="event-details">Inventory: 10/15 | Tasks: 3/5</div>
+                </div>
+                <div class="days-left">13 Days Left</div>
+                <div class="status-bar status-confirmed"></div>
+                <div class="event-actions">
+                    <button class="btn btn-edit" onclick="editEvent('WED00001', event)">Edit</button>
+                    <button class="btn btn-load" onclick="openLoadPopup('WED00001', event)">Load</button>
+                    <button class="btn btn-tasks" onclick="openTaskPopup('WED00001', event)">Tasks</button>
+                </div>
+            </div>
+
+            <div class="event-card" data-id="2" data-type="Baby Shower" data-status="Pending" data-date="2025-04-20" data-days-left="18">
+                <div class="event-card-header">Baby Shower</div>
+                <div class="event-card-body">
+                    Event ID: <span>BAB00002</span><br>
+                    Date: <span>2025-04-20</span><br>
+                    Time: <span>14:00</span><br>
+                    Venue: <span>Community Center</span><br>
+                    Client: <span>Jane Smith</span><br>
+                    Status: <span>Pending</span><br>
+                    <div class="event-details">Inventory: 5/8 | Tasks: 2/4</div>
+                </div>
+                <div class="days-left">18 Days Left</div>
+                <div class="status-bar status-pending"></div>
+                <div class="event-actions">
+                    <button class="btn btn-edit" onclick="editEvent('BAB00002', event)">Edit</button>
+                    <button class="btn btn-load" onclick="openLoadPopup('BAB00002', event)">Load</button>
+                    <button class="btn btn-tasks" onclick="openTaskPopup('BAB00002', event)">Tasks</button>
+                </div>
+            </div>
+
+            <div class="event-card" data-id="3" data-type="Baarat" data-status="Completed" data-date="2025-03-30" data-days-left="0">
+                <div class="event-card-header">Baarat Ceremony</div>
+                <div class="event-card-body">
+                    Event ID: <span>BAA00003</span><br>
+                    Date: <span>2025-03-30</span><br>
+                    Time: <span>18:00</span><br>
+                    Venue: <span>Temple Grounds</span><br>
+                    Client: <span>Ravi Patel</span><br>
+                    Status: <span>Completed</span><br>
+                    <div class="event-details">Inventory: 8/12 | Tasks: 4/6</div>
+                </div>
+                <div class="days-left">Done</div>
+                <div class="status-bar status-completed"></div>
+                <div class="event-actions">
+                    <button class="btn btn-edit" onclick="editEvent('BAA00003', event)">Edit</button>
+                    <button class="btn btn-load" onclick="openLoadPopup('BAA00003', event)">Load</button>
+                    <button class="btn btn-tasks" onclick="openTaskPopup('BAA00003', event)">Tasks</button>
+                </div>
+            </div>
+
+            <div class="event-card" data-id="4" data-type="Club Night" data-status="Quoted" data-date="2025-04-25" data-days-left="23">
+                <div class="event-card-header">Club Night Special</div>
+                <div class="event-card-body">
+                    Event ID: <span>CLU00004</span><br>
+                    Date: <span>2025-04-25</span><br>
+                    Time: <span>20:00</span><br>
+                    Venue: <span>Club Nexus</span><br>
+                    Client: <span>Mike Johnson</span><br>
+                    Status: <span>Quoted</span><br>
+                    <div class="event-details">Inventory: 0/10 | Tasks: 1/3</div>
+                </div>
+                <div class="days-left">23 Days Left</div>
+                <div class="status-bar status-quoted"></div>
+                <div class="event-actions">
+                    <button class="btn btn-edit" onclick="editEvent('CLU00004', event)">Edit</button>
+                    <button class="btn btn-load" onclick="openLoadPopup('CLU00004', event)">Load</button>
+                    <button class="btn btn-tasks" onclick="openTaskPopup('CLU00004', event)">Tasks</button>
+                </div>
+            </div>
+
+            <div class="event-card" data-id="5" data-type="Corporate" data-status="Pending" data-date="2025-05-01" data-days-left="29">
+                <div class="event-card-header">Corporate Gala</div>
+                <div class="event-card-body">
+                    Event ID: <span>COR00005</span><br>
+                    Date: <span>2025-05-01</span><br>
+                    Time: <span>19:00</span><br>
+                    Venue: <span>City Convention Center</span><br>
+                    Client: <span>Tech Corp</span><br>
+                    Status: <span>Pending</span><br>
+                    <div class="event-details">Inventory: 3/20 | Tasks: 2/7</div>
+                </div>
+                <div class="days-left">29 Days Left</div>
+                <div class="status-bar status-pending"></div>
+                <div class="event-actions">
+                    <button class="btn btn-edit" onclick="editEvent('COR00005', event)">Edit</button>
+                    <button class="btn btn-load" onclick="openLoadPopup('COR00005', event)">Load</button>
+                    <button class="btn btn-tasks" onclick="openTaskPopup('COR00005', event)">Tasks</button>
+                </div>
+            </div>
+
+            <div class="event-card" data-id="6" data-type="Wedding" data-status="Confirmed" data-date="2025-05-10" data-days-left="38">
+                <div class="event-card-header">Smith Wedding</div>
+                <div class="event-card-body">
+                    Event ID: <span>WED00006</span><br>
+                    Date: <span>2025-05-10</span><br>
+                    Time: <span>17:00</span><br>
+                    Venue: <span>Riverside Gardens</span><br>
+                    Client: <span>Emily Smith</span><br>
+                    Status: <span>Confirmed</span><br>
+                    <div class="event-details">Inventory: 12/18 | Tasks: 4/6</div>
+                </div>
+                <div class="days-left">38 Days Left</div>
+                <div class="status-bar status-confirmed"></div>
+                <div class="event-actions">
+                    <button class="btn btn-edit" onclick="editEvent('WED00006', event)">Edit</button>
+                    <button class="btn btn-load" onclick="openLoadPopup('WED00006', event)">Load</button>
+                    <button class="btn btn-tasks" onclick="openTaskPopup('WED00006', event)">Tasks</button>
+                </div>
+            </div>
+
+            <div class="event-card" data-id="7" data-type="Baarat" data-status="Quoted" data-date="2025-05-15" data-days-left="43">
+                <div class="event-card-header">Patel Baarat</div>
+                <div class="event-card-body">
+                    Event ID: <span>BAA00007</span><br>
+                    Date: <span>2025-05-15</span><br>
+                    Time: <span>15:00</span><br>
+                    Venue: <span>City Park</span><br>
+                    Client: <span>Amit Patel</span><br>
+                    Status: <span>Quoted</span><br>
+                    <div class="event-details">Inventory: 0/14 | Tasks: 0/4</div>
+                </div>
+                <div class="days-left">43 Days Left</div>
+                <div class="status-bar status-quoted"></div>
+                <div class="event-actions">
+                    <button class="btn btn-edit" onclick="editEvent('BAA00007', event)">Edit</button>
+                    <button class="btn btn-load" onclick="openLoadPopup('BAA00007', event)">Load</button>
+                    <button class="btn btn-tasks" onclick="openTaskPopup('BAA00007', event)">Tasks</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (updated to add Profile tab and use icon-and-text style) -->
+    <div class="bottom-nav">
+        <a href="Dashboard.html" class="nav-item" onclick="loadPage('dashboard')"><i class="fas fa-home"></i><br>Dashboard</a>
+        <a href="events.html" class="nav-item active" onclick="loadPage('events')"><i class="fas fa-calendar-alt"></i><br>Events</a>
+        <a href="inventory.html" class="nav-item" onclick="loadPage('inventory')"><i class="fas fa-box"></i><br>Inventory</a>
+        <a href="clients.html" class="nav-item" onclick="loadPage('clients')"><i class="fas fa-users"></i><br>Clients</a>
+        <a href="profile.html" class="nav-item" onclick="loadPage('profile')"><i class="fas fa-user"></i><br>Profile</a>
+    </div>
+
+    <div class="modal" id="loadModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeLoadPopup()">×</span>
+            <div class="modal-header">Load Equipment for Event</div>
+            <div class="modal-progress" id="modalProgress">Loaded: <span class="loaded-units">0</span>/<span class="total-units">0</span> units (<span class="loaded-items">0</span>/<span class="total-items">0</span> items)</div>
+            <div class="modal-search">
+                <input type="text" id="equipmentSearch" placeholder="Search or Scan Equipment..." oninput="filterEquipment(this.value)">
+                <span class="camera-icon" onclick="startScan()">📷</span>
+                <div class="modal-search-suggestions" id="searchSuggestions"></div>
+            </div>
+            <div class="modal-scan">
+                <button class="btn btn-edit" onclick="openInventoryModal()">View Details</button>
+                <div class="scan-animation" id="scanAnimation">
+                    <div class="scan-barcode">
+                        <div class="scan-line"></div>
+                    </div>
+                </div>
+            </div>
+            <ul class="equipment-list" id="equipmentList">
+                <!-- Equipment list will be populated dynamically -->
+            </ul>
+            <div class="swipe-hint" id="swipeHint">Swipe to Load/Unload</div>
+            <div class="bulk-load-section" id="bulkLoadSection">
+                <div class="bulk-load-header">Bulk Load Equipment</div>
+                <div class="bulk-load-quick">
+                    <label for="quickLoadPercent">Quick Load:</label>
+                    <select id="quickLoadPercent" onchange="quickLoad(this.value)">
+                        <option value="0">0%</option>
+                        <option value="25">25%</option>
+                        <option value="50">50%</option>
+                        <option value="75">75%</option>
+                        <option value="100">100%</option>
+                    </select>
+                </div>
+                <div id="bulkLoadInputs">
+                    <!-- Quantity inputs will be populated dynamically -->
+                </div>
+                <div class="bulk-load-buttons">
+                    <button class="btn btn-load" onclick="loadAllRemaining()">Load All Remaining</button>
+                    <button class="btn btn-edit" onclick="confirmBulkLoad()">Confirm Quantities</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-bulk" onclick="toggleBulkLoadSection()">Bulk Load</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="inventoryModal">
+        <div class="inventory-modal-content">
+            <span class="modal-close" onclick="closeInventoryModal()">×</span>
+            <div class="modal-header">Event Inventory</div>
+            <ul class="inventory-list" id="inventoryList">
+                <!-- Inventory list will be populated dynamically -->
+            </ul>
+        </div>
+    </div>
+
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeTaskPopup()">×</span>
+            <div class="modal-header">Tasks for Event</div>
+            <div class="modal-progress" id="taskProgress">Completed: <span class="completed-tasks">0</span>/<span class="total-tasks">0</span> tasks</div>
+            <ul class="task-list" id="taskList">
+                <!-- Task list will be populated dynamically -->
+            </ul>
+            <div class="modal-footer">
+                <button class="btn btn-edit" onclick="viewEventDetails(currentEventId)">View Details</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const eventList = document.getElementById('eventList');
+        const loadModal = document.getElementById('loadModal');
+        const equipmentList = document.getElementById('equipmentList');
+        const modalProgress = document.getElementById('modalProgress');
+        const modalError = document.getElementById('modalError');
+        const bulkLoadSection = document.getElementById('bulkLoadSection');
+        const bulkLoadInputs = document.getElementById('bulkLoadInputs');
+        const taskModal = document.getElementById('taskModal');
+        const taskList = document.getElementById('taskList');
+        const taskProgress = document.getElementById('taskProgress');
+        const searchInput = document.getElementById('equipmentSearch');
+        const searchSuggestions = document.getElementById('searchSuggestions');
+        const scanAnimation = document.getElementById('scanAnimation');
+        const swipeHint = document.getElementById('swipeHint');
+        const inventoryModal = document.getElementById('inventoryModal');
+        const inventoryList = document.getElementById('inventoryList');
+
+        // Sample equipment data for each event
+        const equipmentData = {
+            'WED00001': [
+                { name: 'Chauvet MH23 Moving Head', quantity: 4, loadedQty: 4, loaded: true },
+                { name: 'L-Acoustics L300 Series', quantity: 2, loadedQty: 2, loaded: true },
+                { name: 'Shure SM58 Microphone', quantity: 3, loadedQty: 3, loaded: true },
+                { name: 'LED Uplights', quantity: 10, loadedQty: 1, loaded: false },
+                { name: 'Audio Mixer', quantity: 1, loadedQty: 0, loaded: false },
+                { name: 'Speaker Stands', quantity: 4, loadedQty: 0, loaded: false }
+            ],
+            'BAB00002': [
+                { name: 'Chauvet MH23 Moving Head', quantity: 2, loadedQty: 2, loaded: true },
+                { name: 'Portable Speakers', quantity: 2, loadedQty: 2, loaded: true },
+                { name: 'Wireless Microphone', quantity: 1, loadedQty: 1, loaded: true },
+                { name: 'Projector', quantity: 1, loadedQty: 0, loaded: false },
+                { name: 'Power Cables', quantity: 5, loadedQty: 0, loaded: false }
+            ],
+            'BAA00003': [
+                { name: 'L-Acoustics L300 Series', quantity: 1, loadedQty: 1, loaded: true },
+                { name: 'LED Uplights', quantity: 10, loadedQty: 5, loaded: false },
+                { name: 'Drum Kit', quantity: 1, loadedQty: 1, loaded: true },
+                { name: 'Stage Lighting Kit', quantity: 2, loadedQty: 1, loaded: false },
+                { name: 'Extension Cords', quantity: 3, loadedQty: 0, loaded: false }
+            ],
+            'CLU00004': [
+                { name: 'DJ Mixer', quantity: 1, loadedQty: 0, loaded: false },
+                { name: 'LED Strobe Lights', quantity: 4, loadedQty: 0, loaded: false },
+                { name: 'Speakers', quantity: 2, loadedQty: 0, loaded: false },
+                { name: 'Microphones', quantity: 2, loadedQty: 0, loaded: false },
+                { name: 'Cables', quantity: 5, loadedQty: 0, loaded: false }
+            ],
+            'COR00005': [
+                { name: 'Projector', quantity: 2, loadedQty: 1, loaded: false },
+                { name: 'Speakers', quantity: 4, loadedQty: 2, loaded: false },
+                { name: 'Microphones', quantity: 3, loadedQty: 0, loaded: false },
+                { name: 'LED Uplights', quantity: 8, loadedQty: 0, loaded: false },
+                { name: 'Cables', quantity: 5, loadedQty: 0, loaded: false }
+            ],
+            'WED00006': [
+                { name: 'Chauvet MH23 Moving Head', quantity: 6, loadedQty: 6, loaded: true },
+                { name: 'L-Acoustics L300 Series', quantity: 3, loadedQty: 3, loaded: true },
+                { name: 'Shure SM58 Microphone', quantity: 4, loadedQty: 3, loaded: false },
+                { name: 'LED Uplights', quantity: 12, loadedQty: 0, loaded: false },
+                { name: 'Audio Mixer', quantity: 1, loadedQty: 0, loaded: false },
+                { name: 'Speaker Stands', quantity: 5, loadedQty: 0, loaded: false }
+            ],
+            'BAA00007': [
+                { name: 'L-Acoustics L300 Series', quantity: 2, loadedQty: 0, loaded: false },
+                { name: 'LED Uplights', quantity: 8, loadedQty: 0, loaded: false },
+                { name: 'Drum Kit', quantity: 1, loadedQty: 0, loaded: false },
+                { name: 'Stage Lighting Kit', quantity: 3, loadedQty: 0, loaded: false }
+            ]
+        };
+
+        // Sample task data for each event
+        const taskData = {
+            'WED00001': [
+                { text: 'Follow up on quote', completed: true },
+                { text: 'Confirm client meeting', completed: true },
+                { text: 'Prepare equipment list', completed: false },
+                { text: 'Send invoice', completed: true },
+                { text: 'Schedule team meeting', completed: false }
+            ],
+            'BAB00002': [
+                { text: 'Book venue', completed: true },
+                { text: 'Order decorations', completed: false },
+                { text: 'Confirm catering', completed: true },
+                { text: 'Send invitations', completed: false }
+            ],
+            'BAA00003': [
+                { text: 'Arrange transportation', completed: true },
+                { text: 'Hire musicians', completed: true },
+                { text: 'Set up stage', completed: false },
+                { text: 'Confirm schedule', completed: true },
+                { text: 'Check equipment', completed: true },
+                { text: 'Plan route', completed: false }
+            ],
+            'CLU00004': [
+                { text: 'Confirm booking', completed: false },
+                { text: 'Set up lighting', completed: false },
+                { text: 'Test sound system', completed: true }
+            ],
+            'COR00005': [
+                { text: 'Send proposal', completed: true },
+                { text: 'Book venue', completed: false },
+                { text: 'Arrange catering', completed: true },
+                { text: 'Set up AV equipment', completed: false },
+                { text: 'Confirm guest list', completed: false },
+                { text: 'Schedule rehearsal', completed: false },
+                { text: 'Plan seating', completed: false }
+            ],
+            'WED00006': [
+                { text: 'Meet with client', completed: true },
+                { text: 'Book venue', completed: true },
+                { text: 'Order flowers', completed: false },
+                { text: 'Confirm catering', completed: true },
+                { text: 'Send invitations', completed: false },
+                { text: 'Schedule rehearsal', completed: false }
+            ],
+            'BAA00007': [
+                { text: 'Plan route', completed: false },
+                { text: 'Hire band', completed: false },
+                { text: 'Confirm schedule', completed: false },
+                { text: 'Check equipment', completed: false }
+            ]
+        };
+
+        // Sample schedule data with cues for each event
+        const scheduleData = {
+            'WED00001': [
+                { time: '16:00', description: 'Start music', action: 'Play playlist' },
+                { time: '16:30', description: 'Lighting change', action: 'Dim lights' },
+                { time: '17:00', description: 'Announce dinner', action: 'Microphone announcement' }
+            ],
+            'BAB00002': [
+                { time: '14:00', description: 'Start event', action: 'Play welcome music' },
+                { time: '14:30', description: 'Games begin', action: 'Announce games' }
+            ],
+            'BAA00003': [
+                { time: '18:00', description: 'Procession starts', action: 'Start drum beat' },
+                { time: '18:30', description: 'Arrive at venue', action: 'Play traditional song' }
+            ],
+            'CLU00004': [
+                { time: '20:00', description: 'DJ set starts', action: 'Start DJ mix' },
+                { time: '21:00', description: 'Strobe lights on', action: 'Activate strobes' }
+            ],
+            'COR00005': [
+                { time: '19:00', description: 'Welcome speech', action: 'Microphone on' },
+                { time: '19:30', description: 'Presentation starts', action: 'Start projector' }
+            ],
+            'WED00006': [
+                { time: '17:00', description: 'Ceremony begins', action: 'Play ceremonial music' },
+                { time: '17:30', description: 'First dance', action: 'Play first dance song' }
+            ],
+            'BAA00007': [
+                { time: '15:00', description: 'Procession starts', action: 'Start drum beat' },
+                { time: '15:30', description: 'Arrive at venue', action: 'Play traditional song' }
+            ]
+        };
+
+        let currentEventId = null;
+        let scanIndex = 0;
+        let activeInputIndex = -1;
+        let currentSort = 'date-asc';
+        let hasSwiped = false;
+
+        function searchEvents() {
+            const input = document.querySelector('.search-box input').value.toLowerCase();
+            const cards = eventList.querySelectorAll('.event-card');
+            cards.forEach(card => {
+                const header = card.querySelector('.event-card-header').textContent.toLowerCase();
+                const body = card.querySelector('.event-card-body').textContent.toLowerCase();
+                card.style.display = (header.includes(input) || body.includes(input)) ? 'block' : 'none';
+            });
+        }
+
+        function toggleSortMenu() {
+            document.getElementById('sortMenu').classList.toggle('active');
+        }
+
+        function sortEvents(criteria) {
+            currentSort = criteria;
+            const cards = Array.from(eventList.querySelectorAll('.event-card'));
+            cards.sort((a, b) => {
+                if (criteria === 'date-asc') {
+                    return new Date(a.dataset.date) - new Date(b.dataset.date);
+                } else if (criteria === 'date-desc') {
+                    return new Date(b.dataset.date) - new Date(a.dataset.date);
+                } else if (criteria === 'status') {
+                    return a.dataset.status.localeCompare(b.dataset.status);
+                }
+                return 0;
+            });
+            eventList.innerHTML = '';
+            cards.forEach(card => eventList.appendChild(card));
+            toggleSortMenu();
+        }
+
+        function filterEvents(type) {
+            const buttons = document.querySelectorAll('.filter-nav button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const cards = eventList.querySelectorAll('.event-card');
+            cards.forEach(card => {
+                const cardType = card.dataset.type;
+                const cardStatus = card.dataset.status;
+                card.style.display = (type === 'all' || cardType === type || (type === 'Quoted' && cardStatus === 'Quoted')) ? 'block' : 'none';
+            });
+        }
+
+        function editEvent(eventId, event) {
+            event.stopPropagation();
+            window.location.href = `edit_event.html?id=${eventId}`;
+        }
+
+        function openLoadPopup(eventId, event) {
+            event.stopPropagation();
+            currentEventId = eventId;
+            scanIndex = 0;
+            activeInputIndex = -1;
+            hasSwiped = false;
+            loadModal.classList.add('active');
+            modalError.classList.remove('active');
+            bulkLoadSection.classList.remove('active');
+            updateEquipmentList();
+            updateLoadProgress();
+        }
+
+        function closeLoadPopup() {
+            loadModal.classList.remove('active');
+            currentEventId = null;
+            searchInput.value = '';
+            searchSuggestions.classList.remove('active');
+            scanAnimation.classList.remove('active');
+            swipeHint.classList.remove('active');
+        }
+
+        function startScan() {
+            scanAnimation.classList.add('active');
+            setTimeout(() => {
+                scanAnimation.classList.remove('active');
+                simulateScan();
+            }, 1500);
+        }
+
+        function simulateScan() {
+            if (!currentEventId) return;
+            const equipment = equipmentData[currentEventId];
+            const availableItems = equipment.filter(item => !item.loaded);
+            if (!availableItems.length) {
+                modalError.classList.add('active');
+                return;
+            }
+            const randomIndex = Math.floor(Math.random() * availableItems.length);
+            activeInputIndex = equipment.indexOf(availableItems[randomIndex]);
+            updateEquipmentList();
+        }
+
+        function filterEquipment(value) {
+            const searchTerm = value.toLowerCase();
+            const equipment = equipmentData[currentEventId] || [];
+            const suggestions = equipment.filter(item => item.name.toLowerCase().includes(searchTerm));
+            searchSuggestions.innerHTML = '';
+            if (searchTerm && suggestions.length) {
+                suggestions.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.textContent = item.name;
+                    div.onclick = () => {
+                        activeInputIndex = equipment.indexOf(item);
+                        updateEquipmentList();
+                        searchInput.value = '';
+                        searchSuggestions.classList.remove('active');
+                    };
+                    searchSuggestions.appendChild(div);
+                });
+                searchSuggestions.classList.add('active');
+            } else {
+                searchSuggestions.classList.remove('active');
+            }
+        }
+
+        function openInventoryModal() {
+            inventoryModal.classList.add('active');
+            updateInventoryList();
+        }
+
+        function closeInventoryModal() {
+            inventoryModal.classList.remove('active');
+        }
+
+        function updateInventoryList() {
+            const equipment = equipmentData[currentEventId] || [];
+            inventoryList.innerHTML = '';
+            equipment.forEach((item, index) => {
+                const statusClass = item.loaded ? 'loaded' : item.loadedQty > 0 ? 'partial' : '';
+                const percentage = (item.loadedQty / item.quantity) * 100;
+                const dashOffset = 62.8 - (percentage / 100) * 62.8;
+                const li = document.createElement('li');
+                li.className = `inventory-item ${statusClass}`;
+                li.innerHTML = `
+                    <div class="inventory-details">
+                        <div class="icon-wrapper">
+                            <svg class="progress-circle" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke-dashoffset="${dashOffset}"/>
+                            </svg>
+                            <span class="icon">📦</span>
+                        </div>
+                        ${item.name}: ${item.loadedQty}/${item.quantity} units
+                    </div>
+                    <div class="inventory-status ${statusClass}">
+                        ${item.loaded ? 'Loaded ✓' : item.loadedQty > 0 ? 'Partially Loaded ⚠️' : 'Not Loaded'}
+                    </div>
+                `;
+                inventoryList.appendChild(li);
+            });
+        }
+
+        function addEquipment(eventId, index) {
+            if (activeInputIndex !== -1) return;
+            activeInputIndex = index;
+            updateEquipmentList();
+        }
+
+        function undoQuantity(eventId, index) {
+            const equipment = equipmentData[eventId][index];
+            equipment.loadedQty = 0;
+            equipment.loaded = false;
+            updateEquipmentList();
+            updateLoadProgress();
+        }
+
+        function confirmQuantity(index) {
+            const qtyInput = document.querySelector(`#quantityInput-${index}`);
+            const qty = parseInt(qtyInput.value);
+            const equipment = equipmentData[currentEventId][index];
+            if (isNaN(qty) || qty < 0) {
+                alert('Please enter a valid quantity.');
+                return;
+            }
+            const errorDiv = qtyInput.parentElement.querySelector('.error');
+            const confirmBtn = qtyInput.parentElement.querySelector('.confirm-btn');
+            if (qty > equipment.quantity) {
+                errorDiv.textContent = `Excess quantity: ${qty}/${equipment.quantity} units.`;
+                errorDiv.classList.add('active');
+                confirmBtn.disabled = true;
+                return;
+            }
+            errorDiv.classList.remove('active');
+            equipment.loadedQty = qty;
+            equipment.loaded = qty === equipment.quantity;
+            if (equipment.loadedQty > 0 && !equipment.loaded) {
+                equipmentList.querySelector(`[data-index="${index}"]`).querySelector('.equipment-status').innerHTML = 'Partially Loaded ⚠️';
+            }
+            activeInputIndex = -1;
+            updateEquipmentList();
+            updateLoadProgress();
+        }
+
+        function adjustQuantity(index, delta) {
+            const qtyInput = document.querySelector(`#quantityInput-${index}`);
+            let qty = parseInt(qtyInput.value) + delta;
+            const equipment = equipmentData[currentEventId][index];
+            if (qty < 0) qty = 0;
+            if (qty > equipment.quantity * 2) qty = equipment.quantity * 2;
+            qtyInput.value = qty;
+            validateQuantity(index);
+        }
+
+        function validateQuantity(index) {
+            const qtyInput = document.querySelector(`#quantityInput-${index}`);
+            const qty = parseInt(qtyInput.value);
+            const equipment = equipmentData[currentEventId][index];
+            const errorDiv = qtyInput.parentElement.querySelector('.error');
+            const confirmBtn = qtyInput.parentElement.querySelector('.confirm-btn');
+            if (isNaN(qty) || qty < 0) {
+                errorDiv.textContent = 'Please enter a valid quantity.';
+                errorDiv.classList.add('active');
+                confirmBtn.disabled = true;
+            } else if (qty > equipment.quantity) {
+                errorDiv.textContent = `Excess quantity: ${qty}/${equipment.quantity} units.`;
+                errorDiv.classList.add('active');
+                confirmBtn.disabled = true;
+            } else {
+                errorDiv.classList.remove('active');
+                confirmBtn.disabled = false;
+            }
+        }
+
+        function swipeLoad(index, direction) {
+            const equipment = equipmentData[currentEventId][index];
+            if (direction === 'right') {
+                equipment.loadedQty = equipment.quantity;
+                equipment.loaded = true;
+            } else if (direction === 'left') {
+                equipment.loadedQty = 0;
+                equipment.loaded = false;
+            }
+            activeInputIndex = -1;
+            updateEquipmentList();
+            updateLoadProgress();
+            if (!hasSwiped) {
+                swipeHint.classList.add('active');
+                hasSwiped = true;
+            }
+        }
+
+        function toggleBulkLoadSection() {
+            bulkLoadSection.classList.toggle('active');
+            if (bulkLoadSection.classList.contains('active')) {
+                const equipment = equipmentData[currentEventId] || [];
+                bulkLoadInputs.innerHTML = '';
+                equipment.forEach((item, index) => {
+                    if (!item.loaded) {
+                        const div = document.createElement('div');
+                        div.className = 'bulk-load-item';
+                        div.innerHTML = `
+                            <div class="item-details">
+                                <span class="icon">📦</span>
+                                ${item.name} (${item.quantity} units)
+                            </div>
+                            <input type="number" id="bulkQtyInput-${index}" value="${item.quantity}" min="0" step="1">
+                        `;
+                        bulkLoadInputs.appendChild(div);
+                    }
+                });
+            }
+        }
+
+        function quickLoad(percent) {
+            const equipment = equipmentData[currentEventId] || [];
+            const percentage = parseInt(percent) / 100;
+            equipment.forEach((item, index) => {
+                if (!item.loaded) {
+                    const input = document.querySelector(`#bulkQtyInput-${index}`);
+                    if (input) {
+                        input.value = Math.round(item.quantity * percentage);
+                    }
+                }
+            });
+        }
+
+        function loadAllRemaining() {
+            const equipment = equipmentData[currentEventId] || [];
+            equipment.forEach((item, index) => {
+                if (!item.loaded) {
+                    const input = document.querySelector(`#bulkQtyInput-${index}`);
+                    if (input) {
+                        input.value = item.quantity;
+                    }
+                }
+            });
+        }
+
+        function confirmBulkLoad() {
+            const equipment = equipmentData[currentEventId] || [];
+            const inputs = bulkLoadInputs.querySelectorAll('input');
+            let hasError = false;
+            inputs.forEach(input => {
+                const index = parseInt(input.id.split('-')[1]);
+                const qty = parseInt(input.value);
+                const item = equipment[index];
+                if (isNaN(qty) || qty < 0) {
+                    alert(`Please enter a valid quantity for ${item.name}.`);
+                    hasError = true;
+                    return;
+                }
+                if (qty > item.quantity) {
+                    alert(`Excess quantity for ${item.name}: ${qty}/${item.quantity} units. Please adjust.`);
+                    hasError = true;
+                    return;
+                }
+            });
+            if (hasError) return;
+            inputs.forEach(input => {
+                const index = parseInt(input.id.split('-')[1]);
+                const qty = parseInt(input.value);
+                const item = equipment[index];
+                item.loadedQty = qty;
+                item.loaded = qty === item.quantity;
+            });
+            bulkLoadSection.classList.remove('active');
+            updateEquipmentList();
+            updateLoadProgress();
+        }
+
+        function openTaskPopup(eventId, event) {
+            event.stopPropagation();
+            currentEventId = eventId;
+            taskModal.classList.add('active');
+            updateTaskList();
+            updateTaskProgress();
+        }
+
+        function closeTaskPopup() {
+            taskModal.classList.remove('active');
+            currentEventId = null;
+        }
+
+        function toggleTask(index) {
+            const tasks = taskData[currentEventId];
+            tasks[index].completed = !tasks[index].completed;
+            updateTaskList();
+            updateTaskProgress();
+        }
+
+        function updateTaskList() {
+            const tasks = taskData[currentEventId] || [];
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = 'task-item';
+                li.innerHTML = `
+                    <input type="checkbox" id="task-${index}" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})">
+                    <span class="task-text ${task.completed ? 'completed' : ''}">${task.text}</span>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        function updateTaskProgress() {
+            const tasks = taskData[currentEventId] || [];
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(task => task.completed).length;
+            taskProgress.innerHTML = `Completed: <span class="completed-tasks">${completedTasks}</span>/<span class="total-tasks">${totalTasks}</span> tasks`;
+        }
+
+        function viewEventDetails(eventId) {
+            window.location.href = `event_detail.html?id=${eventId}`;
+        }
+
+        function loadPage(page) {
+            console.log(`Loading ${page} page`);
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!loadModal.contains(e.target) && !e.target.classList.contains('btn-load') && loadModal.classList.contains('active')) {
+                closeLoadPopup();
+            }
+            if (!taskModal.contains(e.target) && !e.target.classList.contains('btn-tasks') && taskModal.classList.contains('active')) {
+                closeTaskPopup();
+            }
+            if (!inventoryModal.contains(e.target) && !e.target.classList.contains('btn-edit') && inventoryModal.classList.contains('active')) {
+                closeInventoryModal();
+            }
+            if (!document.getElementById('sortMenu').contains(e.target) && !e.target.classList.contains('sort-button')) {
+                document.getElementById('sortMenu').classList.remove('active');
+            }
+            if (!searchSuggestions.contains(e.target) && e.target !== searchInput) {
+                searchSuggestions.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = Array.from(eventList.querySelectorAll('.event-card'));
+            cards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('btn')) {
+                        viewEventDetails(card.dataset.id);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

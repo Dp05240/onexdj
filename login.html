@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - One X DJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #e91e63;
+            --primary-dark: #c2185b;
+            --dark: #1a1a1a;
+            --card-bg: #000000;
+            --text-dark: #ffffff;
+            --text-light: #ffffff;
+            --text-secondary: #cccccc;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            --border-color: #333333;
+            --input-bg: #212121;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--dark);
+            min-height: 100vh;
+            color: var(--text-dark);
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 1s ease;
+        }
+
+        .splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none; /* Ensure it doesn't block interactions after fading */
+        }
+
+        .splash-screen p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+
+        .logo {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo::before {
+            content: '🎧';
+            margin-right: 0.5rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            width: 100%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card.active {
+            opacity: 1;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        input {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            width: 100%;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
+        }
+
+        .button-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            position: relative;
+        }
+
+        .login-button, .signup-button {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            flex: 1;
+            box-shadow: 0 0 8px rgba(233, 30, 99, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-button:hover, .signup-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .login-button:active, .signup-button:active {
+            transform: scale(0.95);
+        }
+
+        .login-button:focus, .signup-button:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .signup-button {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+        }
+
+        .signup-button:hover {
+            background-color: rgba(233, 30, 99, 0.1);
+        }
+
+        .login-button svg {
+            margin-right: 0.5rem;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--primary);
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            width: 90%;
+            max-width: 390px;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            color: var(--text-dark);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .modal-form label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .modal-form input {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+        }
+
+        .modal-form input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
+        }
+
+        .modal-button {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 0 8px rgba(233, 30, 99, 0.3);
+        }
+
+        .modal-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .modal-button:active {
+            transform: scale(0.95);
+        }
+
+        .modal-button:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-screen" id="splashScreen">
+        <div class="logo">One X DJ</div>
+        <p>Your Ultimate DJ Companion</p>
+    </div>
+
+    <div class="container">
+        <div class="logo">One X DJ</div>
+        <div class="card" id="loginCard">
+            <div class="form-section">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter username" required tabindex="1">
+
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter password" required tabindex="2">
+
+                <div class="button-container">
+                    <button class="login-button" onclick="login()" aria-label="Login to One X DJ" tabindex="3">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                            <polyline points="10 17 15 12 10 7" />
+                            <line x1="15" y1="12" x2="3" y2="12" />
+                        </svg>
+                        Login
+                        <span class="loading-spinner" id="loginSpinner"></span>
+                    </button>
+                    <button class="signup-button" onclick="showSignUpModal()" aria-label="Sign Up for One X DJ" tabindex="4">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="signUpModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeSignUpModal()">×</span>
+            <div class="modal-header">Sign Up for One X DJ</div>
+            <div class="modal-form">
+                <label for="signupUsername">Username</label>
+                <input type="text" id="signupUsername" placeholder="Enter username" required tabindex="5">
+
+                <label for="signupEmail">Email</label>
+                <input type="email" id="signupEmail" placeholder="Enter email" required tabindex="6">
+
+                <label for="signupPassword">Password</label>
+                <input type="password" id="signupPassword" placeholder="Enter password" required tabindex="7">
+
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm password" required tabindex="8">
+
+                <button class="modal-button" onclick="signUp()" aria-label="Complete Sign Up" tabindex="9">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const spinner = document.getElementById('loginSpinner');
+
+            if (!username || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            spinner.style.display = 'inline-block';
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                // Simulate login success (in a real app, this would validate credentials)
+                localStorage.setItem('isLoggedIn', 'true');
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        }
+
+        function showSignUpModal() {
+            document.getElementById('signUpModal').classList.add('active');
+            document.querySelectorAll('#signUpModal input').forEach(input => input.value = '');
+        }
+
+        function closeSignUpModal() {
+            document.getElementById('signUpModal').classList.remove('active');
+        }
+
+        function signUp() {
+            const username = document.getElementById('signupUsername').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!username || !email || !password || !confirmPassword) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            const spinner = document.createElement('span');
+            spinner.className = 'loading-spinner';
+            document.querySelector('#signUpModal .button-container').appendChild(spinner);
+            spinner.style.display = 'inline-block';
+
+            setTimeout(() => {
+                spinner.remove();
+                // Simulate sign-up success (in a real app, this would create a user in the backend)
+                localStorage.setItem('isLoggedIn', 'true');
+                alert('Sign-up successful! You are now logged in.');
+                closeSignUpModal();
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.getElementById('splashScreen').classList.add('fade-out');
+                document.getElementById('loginCard').classList.add('active');
+            }, 2000);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('signUpModal').contains(e.target) && !e.target.classList.contains('signup-button') && document.getElementById('signUpModal').classList.contains('active')) {
+                closeSignUpModal();
+            }
+        });
+
+        // Remove restrictive touchmove listener to allow form interactions
+        document.addEventListener('touchmove', (e) => {
+            // Only prevent zooming, not other touch interactions
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>

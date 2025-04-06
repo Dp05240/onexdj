@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients - One X DJ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #e91e63;
+            --primary-dark: #c2185b;
+            --dark: #1a1a1a;
+            --card-bg: #000000;
+            --text-dark: #ffffff;
+            --text-light: #ffffff;
+            --text-secondary: #b0b0b0;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            --border-color: #333333;
+            --input-bg: #212121;
+            --status-quoted: #FF9500;
+            --status-existing: #34C759;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            width: 430px;
+            height: 932px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .header {
+            background-color: var(--dark);
+            color: var(--text-light);
+            padding: 10px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            box-shadow: var(--shadow);
+            z-index: 10;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-dot {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 40px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            z-index: 101;
+        }
+
+        .dropdown.active {
+            display: block;
+        }
+
+        .dropdown a {
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        .dropdown a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .search-box {
+            margin: 10px;
+            width: calc(100% - 20px);
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            transition: border-color 0.2s, background-color 0.3s;
+        }
+
+        .search-box input:focus {
+            background-color: var(--input-bg);
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
+        }
+
+        .search-box .add-button {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .search-box .add-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .filter-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 10px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            width: 100%;
+        }
+
+        .filter-nav button {
+            background: none;
+            border: none;
+            padding: 8px 15px;
+            font-size: 14px;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: color 0.3s;
+            white-space: nowrap;
+        }
+
+        .filter-nav button.active {
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .clients-container {
+            flex: 1;
+            padding: 10px;
+            padding-bottom: 60px;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .client-card {
+            background-color: #212121;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            transition: transform 0.5s;
+            min-height: 70px;
+            color: var(--text-dark);
+            width: 100%;
+            max-width: 410px;
+        }
+
+        .client-card.swiped {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .client-profile {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #424242;
+            color: var(--text-light);
+            font-size: 16px;
+        }
+
+        .client-info {
+            flex: 1;
+            min-width: 0;
+            padding-right: 8px;
+            overflow: hidden;
+        }
+
+        .client-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-dark);
+        }
+
+        .client-details {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .client-details span {
+            display: block;
+            white-space: nowrap;
+        }
+
+        .quote-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .quote-status.quoted { background-color: var(--status-quoted); }
+        .quote-status.existing { background-color: var(--status-existing); }
+
+        .create-event-btn {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex-shrink: 0;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .create-event-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .bottom-nav {
+            background: var(--dark);
+            color: var(--text-light);
+            display: flex;
+            padding: 0.5rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            z-index: 100;
+            box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            transition: background-color 0.3s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="menu-dot" onclick="toggleDropdown()">⋮</div>
+        <div class="dropdown" id="menuDropdown">
+            <a href="#" onclick="syncContacts()">Sync Contacts</a>
+        </div>
+        <h1>Clients</h1>
+    </div>
+
+    <div class="search-box">
+        <input type="text" placeholder="Search Clients..." oninput="searchClients()">
+        <button class="add-button" onclick="window.location.href='client_profile.html'">Add</button>
+    </div>
+
+    <div class="filter-nav">
+        <button class="active" onclick="filterClients('all')">Customers</button>
+        <button onclick="filterClients('quoted')">Quoted</button>
+        <button onclick="filterClients('existing')">Existing</button>
+    </div>
+
+    <div class="clients-container" id="clientsContainer">
+        <div class="client-card" data-id="1" data-status="quoted" onclick="showClientDetails(this)">
+            <div class="client-profile"><i class="fas fa-user"></i></div>
+            <div class="client-info">
+                <div class="client-name">John Doe</div>
+                <div class="client-details">
+                    <span>Phone: (123) 456-7890</span>
+                    <span>Email: john.doe@example.com</span>
+                    <span>Last Visit: 03/15/2025</span>
+                </div>
+            </div>
+            <span class="quote-status quoted"></span>
+            <button class="create-event-btn" onclick="event.stopPropagation(); createEvent('John Doe')">Create Event</button>
+        </div>
+
+        <div class="client-card" data-id="2" data-status="existing" onclick="showClientDetails(this)">
+            <div class="client-profile"><i class="fas fa-user"></i></div>
+            <div class="client-info">
+                <div class="client-name">Jane Smith</div>
+                <div class="client-details">
+                    <span>Phone: (987) 654-3210</span>
+                    <span>Email: jane.smith@example.com</span>
+                    <span>Last Visit: 02/20/2025</span>
+                </div>
+            </div>
+            <span class="quote-status existing"></span>
+            <button class="create-event-btn" onclick="event.stopPropagation(); createEvent('Jane Smith')">Create Event</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="Dashboard.html" class="nav-item" onclick="loadPage('dashboard')"><i class="fas fa-home"></i><br>Dashboard</a>
+        <a href="events.html" class="nav-item" onclick="loadPage('events')"><i class="fas fa-calendar-alt"></i><br>Events</a>
+        <a href="inventory.html" class="nav-item" onclick="loadPage('inventory')"><i class="fas fa-box"></i><br>Inventory</a>
+        <a href="clients.html" class="nav-item active" onclick="loadPage('clients')"><i class="fas fa-users"></i><br>Clients</a>
+        <a href="profile.html" class="nav-item" onclick="loadPage('profile')"><i class="fas fa-user"></i><br>Profile</a>
+    </div>
+
+    <script>
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        // Sample phone contacts to simulate syncing
+        const phoneContacts = [
+            { name: "Alice Johnson", phone: "(555) 123-4567", email: "alice.johnson@example.com", lastVisit: "" },
+            { name: "Bob Williams", phone: "(555) 987-6543", email: "", lastVisit: "" },
+            { name: "Charlie Brown", phone: "(555) 456-7890", email: "charlie.brown@example.com", lastVisit: "" }
+        ];
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('menuDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        function syncContacts() {
+            const container = document.getElementById('clientsContainer');
+            const existingContacts = Array.from(container.querySelectorAll('.client-card')).map(card => {
+                const phone = card.querySelector('.client-details').children[0].textContent.replace('Phone: ', '');
+                return phone;
+            });
+
+            let nextId = Math.max(...Array.from(container.querySelectorAll('.client-card')).map(card => parseInt(card.dataset.id) || 0), 0) + 1;
+
+            phoneContacts.forEach(contact => {
+                // Check for duplicates by phone number
+                if (!existingContacts.includes(contact.phone)) {
+                    const newCard = document.createElement('div');
+                    newCard.className = 'client-card';
+                    newCard.dataset.id = nextId++;
+                    newCard.dataset.status = 'quoted';
+                    const formattedDate = contact.lastVisit ? new Date(contact.lastVisit).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }) : 'N/A';
+                    newCard.innerHTML = `
+                        <div class="client-profile"><i class="fas fa-user"></i></div>
+                        <div class="client-info">
+                            <div class="client-name">${contact.name}</div>
+                            <div class="client-details">
+                                <span>Phone: ${contact.phone}</span>
+                                <span>Email: ${contact.email || 'N/A'}</span>
+                                <span>Last Visit: ${formattedDate}</span>
+                            </div>
+                        </div>
+                        <span class="quote-status quoted"></span>
+                        <button class="create-event-btn" onclick="event.stopPropagation(); createEvent('${contact.name}')">Create Event</button>
+                    `;
+                    newCard.onclick = () => showClientDetails(newCard);
+                    container.appendChild(newCard);
+                    addSwipeListener(newCard);
+                }
+            });
+
+            alert('Contacts synced successfully! Duplicates were skipped.');
+            toggleDropdown();
+        }
+
+        function searchClients() {
+            const input = document.querySelector('.search-box input');
+            input.style.backgroundColor = '#fff';
+            setTimeout(() => input.style.backgroundColor = '#e5e5e5', 500);
+        }
+
+        function filterClients(type) {
+            const buttons = document.querySelectorAll('.filter-nav button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const cards = document.querySelectorAll('.client-card');
+            cards.forEach(card => {
+                card.style.display = (type === 'all' || card.dataset.status === type) ? 'flex' : 'none';
+            });
+        }
+
+        function createEvent(clientName) {
+            alert(`Creating event for ${clientName}`);
+        }
+
+        function showClientDetails(card) {
+            const clientId = card.dataset.id;
+            window.location.href = `client_profile.html?id=${clientId}`;
+        }
+
+        function addSwipeListener(card) {
+            card.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+
+            card.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                if (touchStartX - touchEndX > 50) {
+                    card.classList.add('swiped');
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                        alert('Swipe to call/message not fully implemented in demo.');
+                    }, 500);
+                }
+            });
+        }
+
+        document.querySelectorAll('.client-card').forEach(addSwipeListener);
+
+        function signOut() {
+            localStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
+        }
+
+        function loadPage(page) {
+            console.log(`Loading ${page} page`);
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('menuDropdown');
+            if (!e.target.classList.contains('menu-dot') && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

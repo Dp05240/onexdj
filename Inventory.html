@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inventory - One X DJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #e91e63;
+            --primary-dark: #c2185b;
+            --dark: #1a1a1a;
+            --card-bg: #000000;
+            --text-dark: #ffffff;
+            --text-light: #ffffff;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            --border-color: #333333;
+            --input-bg: #212121;
+            --status-available: #34C759;
+            --status-low: #FF9500;
+            --status-out: #FF3B30;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            color: var(--text-dark);
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        .header {
+            background-color: var(--dark);
+            color: var(--text-light);
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            max-width: 430px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            padding: 4rem 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .search-box {
+            padding: 0.75rem;
+            width: 100%;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
+        }
+
+        .search-box .add-button {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .search-box .add-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .filter-nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 0.5rem;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            gap: 0.5rem;
+        }
+
+        .filter-nav button {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .filter-nav button.active {
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .inventory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .inventory-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .inventory-card i {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .inventory-card-content {
+            flex: 1;
+        }
+
+        .inventory-card-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .inventory-card-body {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            line-height: 1.4;
+        }
+
+        .inventory-card-body span {
+            color: #b0b0b0;
+        }
+
+        .inventory-status {
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .status-available { color: var(--status-available); }
+        .status-low { color: var(--status-low); }
+        .status-out { color: var(--status-out); }
+
+        .inventory-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            min-width: 60px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .bottom-nav {
+            background: var(--dark);
+            color: var(--text-light);
+            display: flex;
+            padding: 0.5rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            width: 90%;
+            max-width: 390px;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            color: var(--text-dark);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .modal-form input, .modal-form select, .modal-form textarea {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+        }
+
+        .modal-form input:disabled {
+            background-color: #333;
+            opacity: 0.8;
+        }
+
+        .modal-form .category-add {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 50%;
+            align-self: center;
+        }
+
+        .modal-form .category-add:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .modal-form .image-box {
+            width: 100px;
+            height: 100px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            margin: 0.5rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--input-bg);
+            cursor: pointer;
+        }
+
+        .modal-form .image-box i {
+            font-size: 2rem;
+            color: var(--text-light);
+        }
+
+        .modal-form .image-box img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+
+        .modal-form .fees-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-form .fees-container span {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .modal-button {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .modal-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .modal-button.delete {
+            background-color: #FF3B30;
+        }
+
+        .modal-button.delete:hover {
+            background-color: #d32f2f;
+        }
+
+        .stock-history {
+            font-size: 0.8rem;
+            color: #b0b0b0;
+            margin-top: 1rem;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+
+        .pin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+        }
+
+        .pin-modal-content {
+            background-color: var(--card-bg);
+            width: 80%;
+            max-width: 340px;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-dark);
+        }
+
+        .pin-modal-content p {
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .pin-modal-content input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        .pin-modal-content .button-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .pin-modal-content button {
+            width: 48%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .pin-modal-content .cancel-btn {
+            background-color: var(--input-bg);
+            color: var(--text-dark);
+        }
+
+        .pin-modal-content .confirm-btn {
+            background-color: var(--primary);
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Inventory</h1>
+    </div>
+
+    <div class="container">
+        <div class="search-box">
+            <input type="text" placeholder="Search Inventory..." oninput="searchInventory()">
+            <button class="add-button" onclick="showInventoryForm()">Add</button>
+        </div>
+
+        <div class="filter-nav">
+            <button class="active" onclick="filterInventory('all')">All</button>
+            <button onclick="filterInventory('Lights')">Lights</button>
+            <button onclick="filterInventory('Sound')">Sound</button>
+            <button onclick="filterInventory('LED Walls')">LED Walls</button>
+            <button onclick="filterInventory('Rig')">Rig</button>
+        </div>
+
+        <div class="inventory-list" id="inventoryList">
+            <div class="inventory-card" data-category="Lights" data-quantity="15" data-code="LIG001" data-fees="150" data-condition="New" data-location="Warehouse A" data-last-updated="2025-04-02" data-stock-history="Initial: 15 on 2025-04-02">
+                <i class="fas fa-lightbulb"></i>
+                <div class="inventory-card-content">
+                    <div class="inventory-card-header">Chauvet MH23 Moving Head</div>
+                    <div class="inventory-card-body">
+                        Item Code: <span>LIG001</span><br>
+                        Category: <span>Lights</span><br>
+                        Fees: <span>$150</span>
+                    </div>
+                    <div class="inventory-status status-available">In Stock: 15</div>
+                </div>
+                <div class="inventory-actions">
+                    <button class="btn" onclick="showInventoryForm('LIG001')">Edit</button>
+                </div>
+            </div>
+
+            <div class="inventory-card" data-category="Sound" data-quantity="5" data-code="SOU002" data-fees="200" data-condition="Used" data-location="Warehouse B" data-last-updated="2025-04-01" data-stock-history="Initial: 5 on 2025-04-01">
+                <i class="fas fa-volume-up"></i>
+                <div class="inventory-card-content">
+                    <div class="inventory-card-header">L-Acoustics L300 Series</div>
+                    <div class="inventory-card-body">
+                        Item Code: <span>SOU002</span><br>
+                        Category: <span>Sound</span><br>
+                        Fees: <span>$200</span>
+                    </div>
+                    <div class="inventory-status status-low">In Stock: 5</div>
+                </div>
+                <div class="inventory-actions">
+                    <button class="btn" onclick="showInventoryForm('SOU002')">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (updated to add Profile tab and use icon-and-text style) -->
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item" onclick="loadPage('dashboard')"><i class="fas fa-home"></i><br>Dashboard</a>
+        <a href="events.html" class="nav-item" onclick="loadPage('events')"><i class="fas fa-calendar-alt"></i><br>Events</a>
+        <a href="inventory.html" class="nav-item active" onclick="loadPage('inventory')"><i class="fas fa-box"></i><br>Inventory</a>
+        <a href="clients.html" class="nav-item" onclick="loadPage('clients')"><i class="fas fa-users"></i><br>Clients</a>
+        <a href="profile.html" class="nav-item" onclick="loadPage('profile')"><i class="fas fa-user"></i><br>Profile</a>
+    </div>
+
+    <div class="modal" id="inventoryFormModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeInventoryForm()">×</span>
+            <div class="modal-header">Inventory Item</div>
+            <div class="modal-form">
+                <label for="itemCode">Item Code</label>
+                <input type="text" id="itemCode" disabled>
+                <label for="itemName">Item Name</label>
+                <input type="text" id="itemName" placeholder="e.g., LED Wall Panel" required>
+                <label for="itemQrCode">QR Code</label>
+                <div id="itemQrCode" style="text-align: center; margin: 0.5rem 0;"></div>
+                <label for="itemStock">Stock</label>
+                <input type="number" id="itemStock" placeholder="e.g., 10" min="0" required>
+                <label for="itemCategory">Category</label>
+                <select id="itemCategory" required onchange="updateItemCode()">
+                    <option value="Lights">Lights</option>
+                    <option value="Sound">Sound</option>
+                    <option value="LED Walls">LED Walls</option>
+                    <option value="Rig">Rig</option>
+                </select>
+                <button class="category-add" onclick="addNewCategory()">Add New Category</button>
+                <label for="itemImage">Image</label>
+                <div class="image-box" id="imageBox" onclick="document.getElementById('hiddenImageInput').click()">
+                    <i class="fas fa-image"></i>
+                </div>
+                <input type="file" id="hiddenImageInput" accept="image/*" style="display: none;">
+                <label for="itemFees">Fees</label>
+                <div class="fees-container">
+                    <span>$</span>
+                    <input type="number" id="itemFees" placeholder="e.g., 100" min="0" step="0.01" required style="flex: 1;">
+                </div>
+                <label for="itemCondition">Condition</label>
+                <select id="itemCondition" required>
+                    <option value="New">New</option>
+                    <option value="Used">Used</option>
+                    <option value="Damaged">Damaged</option>
+                </select>
+                <label for="itemLocation">Location</label>
+                <input type="text" id="itemLocation" placeholder="e.g., Warehouse A">
+                <label for="itemLastUpdated">Last Updated</label>
+                <input type="text" id="itemLastUpdated" disabled>
+                <button class="modal-button" onclick="saveItem()">Save</button>
+                <button class="modal-button delete" onclick="showPinModal()">Delete</button>
+                <div class="stock-history" id="stockHistory"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pin-modal" id="pinModal">
+        <div class="pin-modal-content">
+            <p>Enter 4-digit PIN to delete this item</p>
+            <input type="number" id="pinInput" maxlength="4" placeholder="PIN" oninput="this.value = this.value.slice(0, 4)">
+            <div class="button-container">
+                <button class="cancel-btn" onclick="closePinModal()">Cancel</button>
+                <button class="confirm-btn" onclick="confirmDelete()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inventoryList = document.getElementById('inventoryList');
+        const inventoryFormModal = document.getElementById('inventoryFormModal');
+        const pinModal = document.getElementById('pinModal');
+        let currentItemCode = null;
+        const correctPin = "1234";
+
+        function searchInventory() {
+            const input = document.querySelector('.search-box input').value.toLowerCase();
+            const cards = inventoryList.querySelectorAll('.inventory-card');
+            cards.forEach(card => {
+                const header = card.querySelector('.inventory-card-header').textContent.toLowerCase();
+                const body = card.querySelector('.inventory-card-body').textContent.toLowerCase();
+                card.style.display = (header.includes(input) || body.includes(input)) ? 'flex' : 'none';
+            });
+        }
+
+        function filterInventory(category) {
+            const buttons = document.querySelectorAll('.filter-nav button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const cards = inventoryList.querySelectorAll('.inventory-card');
+            cards.forEach(card => {
+                const cardCategory = card.dataset.category;
+                card.style.display = (category === 'all' || cardCategory === category) ? 'flex' : 'none';
+            });
+        }
+
+        function generateItemCode(category) {
+            const prefix = category.substring(0, 3).toUpperCase();
+            const existingCodes = Array.from(inventoryList.querySelectorAll('.inventory-card'))
+                .map(card => card.dataset.code)
+                .filter(code => code && code.startsWith(prefix))
+                .map(code => parseInt(code.slice(3)) || 0);
+            const nextNum = (Math.max(...existingCodes, 0) + 1).toString().padStart(3, '0');
+            return `${prefix}${nextNum}`;
+        }
+
+        function updateItemCode() {
+            const itemCategory = document.getElementById('itemCategory').value;
+            const newCode = generateItemCode(itemCategory);
+            document.getElementById('itemCode').value = newCode;
+            document.getElementById('itemQrCode').innerHTML = '';
+            new QRCode(document.getElementById('itemQrCode'), { text: newCode, width: 100, height: 100 });
+        }
+
+        function showInventoryForm(itemCode = null) {
+            inventoryFormModal.style.display = 'flex';
+            currentItemCode = itemCode;
+            const itemCodeField = document.getElementById('itemCode');
+            const itemName = document.getElementById('itemName');
+            const itemStock = document.getElementById('itemStock');
+            const itemQrCode = document.getElementById('itemQrCode');
+            const itemCategory = document.getElementById('itemCategory');
+            const itemFees = document.getElementById('itemFees');
+            const itemCondition = document.getElementById('itemCondition');
+            const itemLocation = document.getElementById('itemLocation');
+            const itemLastUpdated = document.getElementById('itemLastUpdated');
+            const stockHistory = document.getElementById('stockHistory');
+
+            itemQrCode.innerHTML = '';
+            stockHistory.textContent = '';
+
+            if (itemCode) {
+                const card = Array.from(inventoryList.querySelectorAll('.inventory-card')).find(c => c.dataset.code === itemCode);
+                if (card) {
+                    itemCodeField.value = itemCode;
+                    itemName.value = card.querySelector('.inventory-card-header').textContent;
+                    itemStock.value = card.dataset.quantity;
+                    itemCategory.value = card.dataset.category;
+                    itemFees.value = card.dataset.fees;
+                    itemCondition.value = card.dataset.condition;
+                    itemLocation.value = card.dataset.location;
+                    itemLastUpdated.value = card.dataset.lastUpdated;
+                    stockHistory.textContent = card.dataset.stockHistory || '';
+                    new QRCode(itemQrCode, { text: itemCode, width: 100, height: 100 });
+                }
+            } else {
+                itemName.value = '';
+                itemStock.value = '';
+                itemCategory.value = 'Lights';
+                itemFees.value = '';
+                itemCondition.value = 'New';
+                itemLocation.value = '';
+                itemLastUpdated.value = new Date().toISOString().split('T')[0];
+                const newCode = generateItemCode(itemCategory.value);
+                itemCodeField.value = newCode;
+                new QRCode(itemQrCode, { text: newCode, width: 100, height: 100 });
+            }
+        }
+
+        function closeInventoryForm() {
+            inventoryFormModal.style.display = 'none';
+            currentItemCode = null;
+        }
+
+        function addNewCategory() {
+            const newCategory = prompt('Enter new category name:');
+            if (newCategory) {
+                const itemCategory = document.getElementById('itemCategory');
+                const newOption = document.createElement('option');
+                newOption.value = newCategory;
+                newOption.text = newCategory;
+                itemCategory.insertBefore(newOption, itemCategory.options[itemCategory.options.length - 1]);
+                itemCategory.value = newCategory;
+                updateItemCode();
+            }
+        }
+
+        function saveItem() {
+            const itemCode = document.getElementById('itemCode').value;
+            const itemName = document.getElementById('itemName').value;
+            const itemStock = parseInt(document.getElementById('itemStock').value);
+            const itemCategory = document.getElementById('itemCategory').value;
+            const itemFees = parseFloat(document.getElementById('itemFees').value);
+            const itemCondition = document.getElementById('itemCondition').value;
+            const itemLocation = document.getElementById('itemLocation').value;
+            const itemLastUpdated = new Date().toISOString().split('T')[0];
+
+            if (itemCode && itemName && itemStock >= 0 && itemFees >= 0) {
+                let card = Array.from(inventoryList.querySelectorAll('.inventory-card')).find(c => c.dataset.code === itemCode);
+                const stockHistory = document.getElementById('stockHistory').textContent || `Initial: ${itemStock} on ${itemLastUpdated}`;
+                const statusClass = itemStock > 5 ? 'status-available' : itemStock > 0 ? 'status-low' : 'status-out';
+
+                if (card) {
+                    card.querySelector('.inventory-card-header').textContent = itemName;
+                    card.querySelector('.inventory-card-body').innerHTML = `
+                        Item Code: <span>${itemCode}</span><br>
+                        Category: <span>${itemCategory}</span><br>
+                        Fees: <span>$${itemFees.toFixed(2)}</span>
+                    `;
+                    card.querySelector('.inventory-status').textContent = `In Stock: ${itemStock}`;
+                    card.querySelector('.inventory-status').className = `inventory-status ${statusClass}`;
+                    card.dataset.quantity = itemStock;
+                    card.dataset.category = itemCategory;
+                    card.dataset.fees = itemFees;
+                    card.dataset.condition = itemCondition;
+                    card.dataset.location = itemLocation;
+                    card.dataset.lastUpdated = itemLastUpdated;
+                    card.dataset.stockHistory = stockHistory;
+                } else {
+                    card = document.createElement('div');
+                    card.className = 'inventory-card';
+                    card.dataset.code = itemCode;
+                    card.dataset.category = itemCategory;
+                    card.dataset.quantity = itemStock;
+                    card.dataset.fees = itemFees;
+                    card.dataset.condition = itemCondition;
+                    card.dataset.location = itemLocation;
+                    card.dataset.lastUpdated = itemLastUpdated;
+                    card.dataset.stockHistory = stockHistory;
+                    card.innerHTML = `
+                        <i class="fas ${itemCategory === 'Lights' ? 'fa-lightbulb' : itemCategory === 'Sound' ? 'fa-volume-up' : itemCategory === 'LED Walls' ? 'fa-tv' : 'fa-tools'}"></i>
+                        <div class="inventory-card-content">
+                            <div class="inventory-card-header">${itemName}</div>
+                            <div class="inventory-card-body">
+                                Item Code: <span>${itemCode}</span><br>
+                                Category: <span>${itemCategory}</span><br>
+                                Fees: <span>$${itemFees.toFixed(2)}</span>
+                            </div>
+                            <div class="inventory-status ${statusClass}">In Stock: ${itemStock}</div>
+                        </div>
+                        <div class="inventory-actions">
+                            <button class="btn" onclick="showInventoryForm('${itemCode}')">Edit</button>
+                        </div>
+                    `;
+                    inventoryList.appendChild(card);
+                }
+                saveToLocalStorage();
+                closeInventoryForm();
+            } else {
+                alert('Please fill in all required fields with valid values');
+            }
+        }
+
+        function showPinModal() {
+            pinModal.style.display = 'flex';
+            document.getElementById('pinInput').value = '';
+        }
+
+        function closePinModal() {
+            pinModal.style.display = 'none';
+        }
+
+        function confirmDelete() {
+            const pin = document.getElementById('pinInput').value;
+            if (pin === correctPin) {
+                if (currentItemCode) {
+                    const card = Array.from(inventoryList.querySelectorAll('.inventory-card')).find(c => c.dataset.code === currentItemCode);
+                    if (card) {
+                        card.remove();
+                        saveToLocalStorage();
+                        closePinModal();
+                        closeInventoryForm();
+                    } else {
+                        alert('Item not found');
+                    }
+                } else {
+                    alert('No item selected to delete');
+                }
+            } else {
+                alert('Incorrect PIN');
+            }
+        }
+
+        function saveToLocalStorage() {
+            const items = Array.from(inventoryList.querySelectorAll('.inventory-card')).map(card => ({
+                code: card.dataset.code,
+                name: card.querySelector('.inventory-card-header').textContent,
+                category: card.dataset.category,
+                quantity: parseInt(card.dataset.quantity),
+                fees: parseFloat(card.dataset.fees),
+                condition: card.dataset.condition,
+                location: card.dataset.location,
+                lastUpdated: card.dataset.lastUpdated,
+                stockHistory: card.dataset.stockHistory
+            }));
+            localStorage.setItem('inventory', JSON.stringify(items));
+        }
+
+        function loadFromLocalStorage() {
+            const items = JSON.parse(localStorage.getItem('inventory') || '[]');
+            items.forEach(item => {
+                const statusClass = item.quantity > 5 ? 'status-available' : item.quantity > 0 ? 'status-low' : 'status-out';
+                const card = document.createElement('div');
+                card.className = 'inventory-card';
+                card.dataset.code = item.code;
+                card.dataset.category = item.category;
+                card.dataset.quantity = item.quantity;
+                card.dataset.fees = item.fees;
+                card.dataset.condition = item.condition;
+                card.dataset.location = item.location;
+                card.dataset.lastUpdated = item.lastUpdated;
+                card.dataset.stockHistory = item.stockHistory;
+                card.innerHTML = `
+                    <i class="fas ${item.category === 'Lights' ? 'fa-lightbulb' : item.category === 'Sound' ? 'fa-volume-up' : item.category === 'LED Walls' ? 'fa-tv' : 'fa-tools'}"></i>
+                    <div class="inventory-card-content">
+                        <div class="inventory-card-header">${item.name}</div>
+                        <div class="inventory-card-body">
+                            Item Code: <span>${item.code}</span><br>
+                            Category: <span>${item.category}</span><br>
+                            Fees: <span>$${item.fees.toFixed(2)}</span>
+                        </div>
+                        <div class="inventory-status ${statusClass}">In Stock: ${item.quantity}</div>
+                    </div>
+                    <div class="inventory-actions">
+                        <button class="btn" onclick="showInventoryForm('${item.code}')">Edit</button>
+                    </div>
+                `;
+                inventoryList.appendChild(card);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            inventoryList.innerHTML = '';
+            loadFromLocalStorage();
+        });
+
+        document.getElementById('hiddenImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imageBox').innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!inventoryFormModal.contains(e.target) && !e.target.classList.contains('add-button') && !e.target.closest('.btn') && inventoryFormModal.style.display === 'flex') {
+                closeInventoryForm();
+            }
+            if (!pinModal.contains(e.target) && pinModal.style.display === 'flex') {
+                closePinModal();
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        function signOut() {
+            localStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
+        }
+
+        function loadPage(page) {
+            console.log(`Loading ${page} page`);
+        }
+    </script>
+</body>
+</html>

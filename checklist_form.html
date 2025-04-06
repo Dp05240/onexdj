@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Event Checklist Form - One X DJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #e91e63;
+            --primary-dark: #c2185b;
+            --dark: #1a1a1a;
+            --card-bg: #000000;
+            --text-dark: #ffffff;
+            --text-light: #ffffff;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            --border-color: #333333;
+            --input-bg: #212121;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--dark);
+            min-height: 100vh;
+            color: var(--text-dark);
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        .header {
+            background-color: var(--dark);
+            color: var(--text-light);
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            max-width: 430px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-arrow {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            padding: 4rem 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 1rem;
+            width: 100%;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        input, select, textarea {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            width: 100%;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
+        }
+
+        textarea {
+            resize: none;
+            height: 100px;
+        }
+
+        .past-events {
+            margin-top: 1rem;
+        }
+
+        .past-event-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .past-event-image {
+            width: 48%;
+            height: 100px;
+            background: url('https://via.placeholder.com/180x100?text=Past+Event+Setup') no-repeat center;
+            background-size: cover;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .past-event-image span {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--text-light);
+            padding: 0.25rem;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .submit-button {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .submit-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .bottom-nav {
+            background-color: var(--dark);
+            color: var(--text-light);
+            display: flex;
+            padding: 0.5rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: background-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item i {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="back-arrow" onclick="goBack()">←</div>
+        <h1>Event Checklist</h1>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="form-section">
+                <label for="eventTheme">What is the overall theme or mood?</label>
+                <input type="text" id="eventTheme" placeholder="e.g., Elegant, Fun, Themed">
+
+                <label for="colorScheme">Any color schemes or decorations for lighting/music?</label>
+                <input type="text" id="colorScheme" placeholder="e.g., Gold and White">
+
+                <label for="mustPlaySongs">What are your must-play songs or artists? (up to 5)</label>
+                <textarea id="mustPlaySongs" placeholder="e.g., Song 1, Song 2"></textarea>
+
+                <label for="preferredGenres">What genres do you prefer? (rank 1-3)</label>
+                <input type="text" id="preferredGenres" placeholder="e.g., Pop, EDM, Jazz">
+
+                <label for="avoidSongs">Any songs or styles to avoid?</label>
+                <input type="text" id="avoidSongs" placeholder="e.g., Rock">
+
+                <label for="indoorOutdoor">Is this an indoor or outdoor event?</label>
+                <select id="indoorOutdoor">
+                    <option value="">Select</option>
+                    <option value="Indoor">Indoor</option>
+                    <option value="Outdoor">Outdoor</option>
+                </select>
+
+                <label for="powerNeeds">Are there power limitations or special equipment needs?</label>
+                <input type="text" id="powerNeeds" placeholder="e.g., Limited power, Dance floor">
+
+                <label for="attendeeCount">How many attendees are expected? (Approximate)</label>
+                <input type="number" id="attendeeCount" placeholder="e.g., 100">
+
+                <label for="specialRequests">Any special performances or announcements?</label>
+                <input type="text" id="specialRequests" placeholder="e.g., Bride entrance">
+
+                <label for="entryExitSongs">Do you want a specific entry or exit song?</label>
+                <input type="text" id="entryExitSongs" placeholder="e.g., Entry: Song A, Exit: Song B">
+
+                <label for="customerNotes">Any additional notes or ideas for the DJ?</label>
+                <textarea id="customerNotes" placeholder="e.g., Keep it upbeat"></textarea>
+
+                <button class="submit-button" onclick="submitChecklist()">Submit Checklist</button>
+            </div>
+        </div>
+        <div class="card past-events">
+            <h3>Similar Past Events</h3>
+            <div class="past-event-gallery">
+                <div class="past-event-image"><span>Wedding Setup 2024</span></div>
+                <div class="past-event-image"><span>Sweet 16 Setup 2024</span></div>
+                <div class="past-event-image"><span>Baarat Setup 2023</span></div>
+                <div class="past-event-image"><span>Baby Shower 2024</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><br>Home</a>
+        <a href="events.html" class="nav-item"><i class="fas fa-calendar-alt"></i><br>Events</a>
+        <a href="inventory.html" class="nav-item"><i class="fas fa-box"></i><br>Inventory</a>
+        <a href="clients.html" class="nav-item"><i class="fas fa-users"></i><br>Clients</a>
+    </div>
+
+    <script>
+        const eventDetails = {
+            '1': {
+                name: "Wedding Celebration",
+                date: "2025-04-15",
+                time: "16:00 - 21:00",
+                venue: "Grand Hall",
+                client: "John Doe",
+                status: "Confirmed",
+                team: "DJ Alex, Lighting Tech Bob"
+            },
+            '2': {
+                name: "Baby Shower",
+                date: "2025-04-20",
+                time: "14:00 - 18:00",
+                venue: "Community Center",
+                client: "Jane Smith",
+                status: "Pending",
+                team: "DJ Sarah, Tech Mike"
+            },
+            '3': {
+                name: "Baarat Ceremony",
+                date: "2025-03-30",
+                time: "18:00 - 22:00",
+                venue: "Temple Grounds",
+                client: "Ravi Patel",
+                status: "Completed",
+                team: "DJ Priya, Tech Anil"
+            }
+        };
+
+        function goBack() {
+            window.location.href = 'event_detail.html';
+        }
+
+        function submitChecklist() {
+            const checklistData = {
+                eventTheme: document.getElementById('eventTheme').value,
+                colorScheme: document.getElementById('colorScheme').value,
+                mustPlaySongs: document.getElementById('mustPlaySongs').value,
+                preferredGenres: document.getElementById('preferredGenres').value,
+                avoidSongs: document.getElementById('avoidSongs').value,
+                indoorOutdoor: document.getElementById('indoorOutdoor').value,
+                powerNeeds: document.getElementById('powerNeeds').value,
+                attendeeCount: document.getElementById('attendeeCount').value,
+                specialRequests: document.getElementById('specialRequests').value,
+                entryExitSongs: document.getElementById('entryExitSongs').value,
+                customerNotes: document.getElementById('customerNotes').value
+            };
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('eventId');
+            if (eventId && Object.values(checklistData).some(value => value)) {
+                let events = JSON.parse(localStorage.getItem('events') || '[]');
+                const eventIndex = events.findIndex(e => e.id === eventId);
+                if (eventIndex !== -1) {
+                    events[eventIndex].checklist = checklistData;
+                    localStorage.setItem('events', JSON.stringify(events));
+                    alert('Checklist submitted successfully!');
+                    goBack();
+                } else {
+                    alert('Event not found.');
+                }
+            } else {
+                alert('Please fill at least one field in the checklist');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('eventId');
+            const event = eventDetails[eventId];
+            if (event) {
+                document.title = `Event Checklist - ${event.name}`;
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>

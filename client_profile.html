@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Client Profile - One X DJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #e91e63;
+            --primary-dark: #c2185b;
+            --dark: #1a1a1a;
+            --card-bg: #000000;
+            --text-dark: #ffffff;
+            --text-light: #ffffff;
+            --text-secondary: #b0b0b0;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            --border-color: #333333;
+            --input-bg: #212121;
+            --status-quoted: #FF9500;
+            --status-existing: #34C759;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--dark);
+            min-height: 100vh;
+            color: var(--text-dark);
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        .header {
+            background-color: var(--dark);
+            color: var(--text-light);
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            max-width: 430px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-arrow {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .menu-dot {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 40px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            z-index: 101;
+        }
+
+        .dropdown.active {
+            display: block;
+        }
+
+        .dropdown a {
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        .dropdown a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            padding: 4rem 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .client-details {
+            padding: 1rem;
+            color: var(--text-dark);
+        }
+
+        .client-details h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .client-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .client-meta i {
+            color: var(--primary);
+        }
+
+        .client-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex: 1;
+            text-align: center;
+            min-height: 44px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-message {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--text-light);
+        }
+
+        .btn-message:hover {
+            background-color: rgba(233, 30, 99, 0.1);
+        }
+
+        .tab-nav {
+            display: flex;
+            justify-content: flex-start;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--primary);
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .tab-nav button {
+            background: none;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: color 0.2s;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tab-nav button.active {
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1rem;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content input, .tab-content textarea {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.25rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+        }
+
+        .tab-content textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .billing-item, .quote-item, .history-item, .activity-item {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .billing-item p, .quote-item p, .history-item p, .activity-item p {
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .billing-item span, .quote-item span, .history-item span, .activity-item span {
+            color: var(--text-secondary);
+        }
+
+        .add-action-btn {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 0.5rem;
+            align-self: flex-start;
+        }
+
+        .add-action-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 65px;
+            right: 10px;
+            background-color: var(--primary);
+            color: var(--text-light);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.3s;
+            z-index: 10;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        .bottom-nav {
+            background: var(--dark);
+            color: var(--text-light);
+            display: flex;
+            padding: 0.5rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            z-index: 100;
+            box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="back-arrow" onclick="goBack()">←</div>
+        <div class="menu-dot" onclick="toggleDropdown()">⋮</div>
+        <div class="dropdown" id="menuDropdown">
+            <a href="#" onclick="alert('Placeholder for future functionality')">Placeholder</a>
+        </div>
+        <h1>Client Profile</h1>
+    </div>
+
+    <div class="container">
+        <div class="client-details" id="clientDetails">
+            <!-- Client details will be filled dynamically -->
+        </div>
+
+        <div class="tab-nav">
+            <button class="active" onclick="showTab('personal-details')">Personal Details</button>
+            <button onclick="showTab('billing')">Billing</button>
+            <button onclick="showTab('quote')">Quote</button>
+            <button onclick="showTab('history')">History</button>
+            <button onclick="showTab('activity')">Activity & Tasks</button>
+        </div>
+
+        <div id="personal-details" class="tab-content active">
+            <input type="text" id="clientName" placeholder="Client Name">
+            <input type="tel" id="clientPhone" placeholder="Phone">
+            <input type="email" id="clientEmail" placeholder="Email">
+            <input type="text" id="clientAddress" placeholder="Address">
+            <input type="text" id="clientId" placeholder="ID#">
+            <textarea id="clientNotes" placeholder="Notes"></textarea>
+            <input type="text" id="createdBy" placeholder="Created By">
+            <input type="date" id="lastVisit" placeholder="Last Visit">
+        </div>
+
+        <div id="billing" class="tab-content">
+            <div class="billing-item">
+                <p>Invoice #INV0001 - $500</p>
+                <span>Status: Pending | Due: 04/15/2025</span>
+            </div>
+            <div class="billing-item">
+                <p>Invoice #INV0002 - $300</p>
+                <span>Status: Paid | Paid On: 03/01/2025</span>
+            </div>
+            <button class="add-action-btn" onclick="alert('Add Invoice functionality not implemented in demo.')">Add Invoice</button>
+        </div>
+
+        <div id="quote" class="tab-content">
+            <div class="quote-item">
+                <p>Quote #QUO0001 - $750</p>
+                <span>Status: Sent | Date: 03/10/2025</span>
+            </div>
+            <div class="quote-item">
+                <p>Quote #QUO0002 - $400</p>
+                <span>Status: Accepted | Date: 02/15/2025</span>
+            </div>
+            <button class="add-action-btn" onclick="alert('Create Quote functionality not implemented in demo.')">Create Quote</button>
+        </div>
+
+        <div id="history" class="tab-content">
+            <div class="history-item">
+                <p>Wedding Celebration - 03/15/2025</p>
+                <span>Feedback: Excellent service, highly recommend!</span>
+            </div>
+            <div class="history-item">
+                <p>Corporate Gala - 02/20/2025</p>
+                <span>Feedback: Great music selection, very professional.</span>
+            </div>
+        </div>
+
+        <div id="activity" class="tab-content">
+            <h3>Communication Log</h3>
+            <div class="activity-item">
+                <p>Email Sent - 03/10/2025</p>
+                <span>Subject: Quote for Upcoming Event</span>
+            </div>
+            <div class="activity-item">
+                <p>Call - 03/05/2025</p>
+                <span>Notes: Discussed event requirements, client prefers outdoor venue.</span>
+            </div>
+            <button class="add-action-btn" onclick="alert('Log Communication functionality not implemented in demo.')">Log Communication</button>
+            <h3 style="margin-top: 1rem;">Tasks & Reminders</h3>
+            <div class="activity-item">
+                <p>Follow up on quote - Due: 04/10/2025</p>
+                <span>Priority: High</span>
+            </div>
+            <div class="activity-item">
+                <p>Send invoice - Due: 04/05/2025</p>
+                <span>Priority: Medium</span>
+            </div>
+            <button class="add-action-btn" onclick="alert('Add Task functionality not implemented in demo.')">Add Task</button>
+        </div>
+    </div>
+
+    <div class="fab" onclick="createEvent()"><i class="fas fa-plus"></i></div>
+
+    <div class="bottom-nav">
+        <a href="Dashboard.html" class="nav-item" onclick="loadPage('dashboard')"><i class="fas fa-home"></i><br>Dashboard</a>
+        <a href="events.html" class="nav-item" onclick="loadPage('events')"><i class="fas fa-calendar-alt"></i><br>Events</a>
+        <a href="inventory.html" class="nav-item" onclick="loadPage('inventory')"><i class="fas fa-box"></i><br>Inventory</a>
+        <a href="clients.html" class="nav-item active" onclick="loadPage('clients')"><i class="fas fa-users"></i><br>Clients</a>
+        <a href="profile.html" class="nav-item" onclick="loadPage('profile')"><i class="fas fa-user"></i><br>Profile</a>
+    </div>
+
+    <script>
+        const clientData = {
+            '1': { name: 'John Doe', phone: '(123) 456-7890', email: 'john.doe@example.com', address: '', id: '', notes: '', createdBy: '', lastVisit: '2025-03-15', status: 'Quoted' },
+            '2': { name: 'Jane Smith', phone: '(987) 654-3210', email: 'jane.smith@example.com', address: '', id: '', notes: '', createdBy: '', lastVisit: '2025-02-20', status: 'Existing' }
+        };
+
+        function goBack() {
+            window.location.href = 'clients.html';
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('menuDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-nav button');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab-nav button[onclick="showTab('${tabId}')"]`).classList.add('active');
+        }
+
+        function loadClientDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clientId = urlParams.get('id');
+            const client = clientData[clientId];
+            if (client) {
+                document.getElementById('clientDetails').innerHTML = `
+                    <h2>${client.name}</h2>
+                    <div class="client-meta">
+                        <div><i class="fas fa-phone"></i> ${client.phone}</div>
+                        <div><i class="fas fa-envelope"></i> ${client.email}</div>
+                    </div>
+                    <div class="client-meta">
+                        <div><i class="fas fa-calendar-alt"></i> Last Visit: ${new Date(client.lastVisit).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</div>
+                    </div>
+                    <div class="client-meta">
+                        Status: ${client.status}
+                    </div>
+                    <div class="client-actions">
+                        <button class="btn" onclick="saveClient()"><i class="fas fa-save"></i> Save</button>
+                        <button class="btn btn-message" onclick="deleteClient()"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                `;
+                document.getElementById('clientName').value = client.name;
+                document.getElementById('clientPhone').value = client.phone;
+                document.getElementById('clientEmail').value = client.email;
+                document.getElementById('clientAddress').value = client.address || '';
+                document.getElementById('clientId').value = client.id || '';
+                document.getElementById('clientNotes').value = client.notes || '';
+                document.getElementById('createdBy').value = client.createdBy || '';
+                document.getElementById('lastVisit').value = client.lastVisit || '';
+            } else {
+                // New client
+                document.getElementById('clientDetails').innerHTML = `
+                    <h2>New Client</h2>
+                    <div class="client-meta">
+                        <div>Status: New</div>
+                    </div>
+                    <div class="client-actions">
+                        <button class="btn" onclick="saveClient()"><i class="fas fa-save"></i> Save</button>
+                    </div>
+                `;
+            }
+        }
+
+        function saveClient() {
+            const name = document.getElementById('clientName').value;
+            const phone = document.getElementById('clientPhone').value;
+            const email = document.getElementById('clientEmail').value;
+            const address = document.getElementById('clientAddress').value;
+            const id = document.getElementById('clientId').value;
+            const notes = document.getElementById('clientNotes').value;
+            const createdBy = document.getElementById('createdBy').value;
+            const lastVisit = document.getElementById('lastVisit').value;
+
+            if (name && phone && email) {
+                alert('Client saved successfully! (This is a demo; actual saving not implemented.)');
+                window.location.href = 'clients.html';
+            } else {
+                alert('Please fill in required fields: Name, Phone, Email');
+            }
+        }
+
+        function deleteClient() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clientId = urlParams.get('id');
+            if (clientId && confirm('Are you sure you want to delete this client?')) {
+                alert('Client deleted successfully! (This is a demo; actual deletion not implemented.)');
+                window.location.href = 'clients.html';
+            }
+        }
+
+        function createEvent() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clientId = urlParams.get('id');
+            const client = clientData[clientId];
+            if (client) {
+                alert(`Creating event for ${client.name}! (This is a demo; actual event creation not implemented.)`);
+            } else {
+                alert('Creating event for new client! (This is a demo; actual event creation not implemented.)');
+            }
+        }
+
+        function loadPage(page) {
+            console.log(`Loading ${page} page`);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadClientDetails();
+        });
+
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('menuDropdown');
+            if (!e.target.classList.contains('menu-dot') && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

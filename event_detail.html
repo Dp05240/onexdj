@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Event Details - One X DJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Base Styles */
+        :root {
+            --primary: #e91e63;
+            --primary-dark: #c2185b;
+            --dark: #1a1a1a;
+            --card-bg: #000000;
+            --text-dark: #ffffff;
+            --text-light: #ffffff;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            --border-color: #333333;
+            --input-bg: #212121;
+            /* For inventory display */
+            --text-secondary: #b0b0b0;
+            --status-confirmed: #34C759;
+            --status-pending: #FF9500;
+            --status-completed: #007AFF;
+            --status-quoted: #FF3B30;
+            --loaded-bg: rgba(52, 199, 89, 0.1);
+            --partial-bg: rgba(255, 149, 0, 0.1);
+            /* For modals */
+            --modal-bg: #212121;
+            --modal-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--dark);
+            min-height: 100vh;
+            color: var(--text-dark);
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        .header {
+            background-color: var(--dark);
+            color: var(--text-light);
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            max-width: 430px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-arrow {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .menu-dot {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 40px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            z-index: 101;
+        }
+
+        .dropdown.active {
+            display: block;
+        }
+
+        .dropdown a {
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        .dropdown a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            padding: 4rem 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Event Details (Old Design) */
+        .event-details {
+            padding: 1rem;
+            color: var(--text-dark);
+        }
+
+        .event-details h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .event-meta i {
+            color: var(--primary);
+        }
+
+        .event-team {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .event-team i {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex: 1;
+            text-align: center;
+            min-height: 44px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-message {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--text-light);
+        }
+
+        .btn-message:hover {
+            background-color: rgba(233, 30, 99, 0.1);
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .tab-nav button {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .tab-nav button.active {
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1rem;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .section-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-card p {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }
+
+        .section-card .cue-link {
+            font-size: 0.8rem;
+            color: var(--primary);
+            margin-top: 0.25rem;
+        }
+
+        .cue-item, .inventory-item, .team-member, .task-item {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .cue-item p, .inventory-item p, .team-member p, .task-item p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        /* Inventory Display (New Design) */
+        .inventory-list, .task-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .inventory-item:last-child {
+            border-bottom: none;
+        }
+
+        .inventory-details {
+            flex: 1;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .inventory-details .icon-wrapper {
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+
+        .inventory-details .icon {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .inventory-details .progress-circle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24px;
+            height: 24px;
+        }
+
+        .inventory-details .progress-circle circle {
+            fill: none;
+            stroke: var(--status-confirmed);
+            stroke-width: 2;
+            stroke-dasharray: 62.8;
+            stroke-dashoffset: 62.8;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .inventory-status {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .inventory-status.loaded {
+            color: #34C759;
+        }
+
+        .inventory-status.partial {
+            color: #FF9500;
+        }
+
+        .inventory-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .add-section-btn {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin: 0 auto;
+        }
+
+        .add-section-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .load-btn {
+            background-color: var(--status-confirmed);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            min-height: 44px;
+        }
+
+        .load-btn:hover {
+            background-color: #2db84c;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            background: var(--dark);
+            color: var(--text-light);
+            display: flex;
+            padding: 0.5rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            width: 90%;
+            max-width: 390px;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--modal-shadow);
+            color: var(--text-dark);
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .modal-header {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .modal-form label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .modal-form input, .modal-form select, .modal-form textarea {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            min-height: 44px;
+        }
+
+        .modal-form textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .modal-form input:focus, .modal-form select:focus, .modal-form textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
+        }
+
+        .modal-form .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .modal-form input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+
+        .modal-button {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            min-height: 44px;
+        }
+
+        .modal-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .modal-footer {
+            position: sticky;
+            bottom: 0;
+            background: var(--modal-bg);
+            padding: 1rem 0 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .modal-footer .modal-button.cancel {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .modal-footer .modal-button.cancel:hover {
+            background-color: rgba(233, 30, 99, 0.1);
+        }
+
+        /* Global Search Styles */
+        .global-search-container {
+            position: relative;
+        }
+
+        .global-search-container input {
+            width: 100%;
+        }
+
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 201;
+            display: none;
+        }
+
+        .suggestions-list div {
+            padding: 0.75rem;
+            cursor: pointer;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .suggestions-list div:hover {
+            background-color: var(--primary);
+        }
+
+        /* Load Equipment Modal Styles (Aligned with events.html) */
+        .modal-load-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 4rem 0; /* Extra margin at bottom to avoid overlap with sticky footer */
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .modal-load-item {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-load-item:last-child {
+            border-bottom: none;
+        }
+
+        .modal-load-item-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-load-item-header input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+
+        .modal-load-item-details {
+            flex: 1;
+        }
+
+        .modal-load-item-details .item-name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .modal-load-item-details .item-status {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-load-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-load-item-quantity label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-load-item-quantity input {
+            width: 60px;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        /* Task Styles */
+        .task-item .task-details {
+            margin-bottom: 0.5rem;
+        }
+
+        .task-item .task-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .task-item .task-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .task-item .task-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .task-item .task-priority.high {
+            color: #FF3B30; /* Red for high priority */
+        }
+
+        .task-item .task-priority.medium {
+            color: #FF9500; /* Orange for medium priority */
+        }
+
+        .task-item .task-priority.low {
+            color: #34C759; /* Green for low priority */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="back-arrow" onclick="goBack()">←</div>
+        <div class="menu-dot" onclick="toggleDropdown()">⋮</div>
+        <div class="dropdown" id="menuDropdown">
+            <a href="#" onclick="sendLink()">Send Link</a>
+            <a href="#" onclick="syncCalendar()">Sync Calendar</a>
+            <a href="schedule_share.html" onclick="shareSchedule()">Share Schedule</a>
+        </div>
+        <h1>Event Details</h1>
+    </div>
+
+    <div class="container">
+        <div class="event-details" id="eventDetails">
+            <!-- Event details will be filled dynamically -->
+        </div>
+
+        <div class="tab-nav">
+            <button class="active" onclick="showTab('schedule')">Schedule</button>
+            <button onclick="showTab('cue')">Cue</button>
+            <button onclick="showTab('inventory')">Inventory</button>
+            <button onclick="showTab('tasks')">Tasks</button>
+            <button onclick="showTab('team')">Team</button>
+        </div>
+
+        <div id="schedule" class="tab-content active">
+            <h3>Event Schedule</h3>
+            <div id="scheduleList">
+                <!-- Schedule items will be populated dynamically -->
+            </div>
+            <button class="add-section-btn" onclick="showAddSectionModal()">+</button>
+        </div>
+
+        <div id="cue" class="tab-content">
+            <h3>Event Cues</h3>
+            <div id="cueList">
+                <!-- Cue items will be populated dynamically -->
+            </div>
+            <button class="add-section-btn" onclick="showAddCueModal()">+</button>
+        </div>
+
+        <div id="inventory" class="tab-content">
+            <h3>Inventory</h3>
+            <ul class="inventory-list" id="inventoryList">
+                <!-- Inventory list will be populated dynamically -->
+            </ul>
+            <div class="inventory-actions">
+                <button class="add-section-btn" onclick="showAddInventoryModal()">+</button>
+                <button class="load-btn" onclick="showLoadEquipmentModal()">Load Equipment</button>
+            </div>
+        </div>
+
+        <div id="tasks" class="tab-content">
+            <h3>Tasks</h3>
+            <ul class="task-list" id="taskList">
+                <!-- Task list will be populated dynamically -->
+            </ul>
+            <button class="add-section-btn" onclick="showAddTaskModal()">+</button>
+        </div>
+
+        <div id="team" class="tab-content">
+            <div class="team-member">
+                <p>DJ Alex</p>
+            </div>
+            <div class="team-member">
+                <p>Lighting Tech Bob</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (updated to match icon-and-text style with Profile tab) -->
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item" onclick="loadPage('dashboard')"><i class="fas fa-home"></i><br>Dashboard</a>
+        <a href="events.html" class="nav-item active" onclick="loadPage('events')"><i class="fas fa-calendar-alt"></i><br>Events</a>
+        <a href="inventory.html" class="nav-item" onclick="loadPage('inventory')"><i class="fas fa-box"></i><br>Inventory</a>
+        <a href="clients.html" class="nav-item" onclick="loadPage('clients')"><i class="fas fa-users"></i><br>Clients</a>
+        <a href="profile.html" class="nav-item" onclick="loadPage('profile')"><i class="fas fa-user"></i><br>Profile</a>
+    </div>
+
+    <div class="modal" id="addSectionModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAddSectionModal()">×</span>
+            <div class="modal-header">Add Schedule Section</div>
+            <div class="modal-form">
+                <label for="sectionTitle">Section Title</label>
+                <input type="text" id="sectionTitle" placeholder="e.g., Ceremony" required>
+                <label for="sectionStartTime">Start Time</label>
+                <input type="time" id="sectionStartTime" required>
+                <label for="sectionEndTime">End Time</label>
+                <input type="time" id="sectionEndTime" required>
+                <label for="cueLink">Cue Link No.</label>
+                <select id="cueLink">
+                    <option value="">Select Cue</option>
+                </select>
+                <label class="checkbox-label" for="sectionPrivate">
+                    <input type="checkbox" id="sectionPrivate">
+                    Private (for internal use, not shared with clients)
+                </label>
+                <button class="modal-button" onclick="saveSection()">Add Section</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addInventoryModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAddInventoryModal()">×</span>
+            <div class="modal-header">Add Inventory Item</div>
+            <div class="modal-form">
+                <label for="itemCategory">Category</label>
+                <select id="itemCategory" onchange="filterItemsByCategory()">
+                    <option value="">Select Category</option>
+                    <option value="Lighting">Lighting</option>
+                    <option value="Sound">Sound</option>
+                    <option value="Accessories">Accessories</option>
+                </select>
+                <label for="globalSearch">Global Search</label>
+                <div class="global-search-container">
+                    <input type="text" id="globalSearch" placeholder="Search for an item..." oninput="filterGlobalSearch()" autocomplete="off">
+                    <div class="suggestions-list" id="suggestionsList"></div>
+                </div>
+                <label for="itemQuantity">Quantity</label>
+                <input type="number" id="itemQuantity" min="1" value="1" required>
+                <label for="initialStatus">Initial Loading Status</label>
+                <select id="initialStatus">
+                    <option value="not-loaded">Not Loaded</option>
+                    <option value="partially-loaded">Partially Loaded</option>
+                    <option value="loaded">Loaded</option>
+                </select>
+                <div class="modal-footer">
+                    <button class="modal-button cancel" onclick="closeAddInventoryModal()">Cancel</button>
+                    <button class="modal-button" onclick="addInventoryItem()">Add Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="loadEquipmentModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeLoadEquipmentModal()">×</span>
+            <div class="modal-header">Load Equipment</div>
+            <ul class="modal-load-list" id="loadEquipmentList">
+                <!-- Equipment list will be populated dynamically -->
+            </ul>
+            <div class="modal-footer">
+                <button class="modal-button cancel" onclick="closeLoadEquipmentModal()">Cancel</button>
+                <button class="modal-button" onclick="loadSelectedEquipment()">Load Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addTaskModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAddTaskModal()">×</span>
+            <div class="modal-header">Add New Task</div>
+            <div class="modal-form">
+                <label for="taskTitle">Task Title</label>
+                <input type="text" id="taskTitle" placeholder="e.g., Follow up on quote" required>
+                <label for="taskDescription">Task Description</label>
+                <textarea id="taskDescription" placeholder="e.g., Call client to confirm details" required></textarea>
+                <label for="taskPriority">Priority</label>
+                <select id="taskPriority" required>
+                    <option value="">Select Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <label for="taskDueDate">Due Date</label>
+                <input type="date" id="taskDueDate" required>
+                <div class="modal-footer">
+                    <button class="modal-button cancel" onclick="closeAddTaskModal()">Cancel</button>
+                    <button class="modal-button" onclick="addTask()">Add Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addCueModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAddCueModal()">×</span>
+            <div class="modal-header">Add New Cue</div>
+            <div class="modal-form">
+                <label for="songName">Song Name</label>
+                <input type="text" id="songName" placeholder="e.g., Intro Song" required>
+                <label for="scheduledTime">Scheduled Time</label>
+                <input type="time" id="scheduledTime" required>
+                <label for="songTimestamp">Song Timestamp</label>
+                <input type="text" id="songTimestamp" placeholder="e.g., 00:30" required>
+                <label class="checkbox-label" for="cueShare">
+                    <input type="checkbox" id="cueShare">
+                    Share (include in client agenda)
+                </label>
+                <button class="modal-button" onclick="saveCue()">Add Cue</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Event data with team field for old design
+        const eventData = {
+            '1': { name: 'Wedding Celebration', id: 'WED00001', date: '2025-04-15', time: '16:00 - 21:00', venue: 'Grand Hall', client: 'John Doe', status: 'Confirmed', team: 'DJ Alex, Lighting Tech Bob' },
+            '2': { name: 'Baby Shower', id: 'BAB00002', date: '2025-04-20', time: '14:00 - 18:00', venue: 'Community Center', client: 'Jane Smith', status: 'Pending', team: 'DJ Sarah, Tech Mike' },
+            '3': { name: 'Baarat Ceremony', id: 'BAA00003', date: '2025-03-30', time: '18:00 - 22:00', venue: 'Temple Grounds', client: 'Ravi Patel', status: 'Completed', team: 'DJ Priya, Tech Anil' },
+            '4': { name: 'Club Night Special', id: 'CLU00004', date: '2025-04-25', time: '20:00 - 23:00', venue: 'Club Nexus', client: 'Mike Johnson', status: 'Quoted', team: 'DJ Mark, Tech Lisa' },
+            '5': { name: 'Corporate Gala', id: 'COR00005', date: '2025-05-01', time: '19:00 - 22:00', venue: 'City Convention Center', client: 'Tech Corp', status: 'Pending', team: 'DJ Emma, Tech Sam' },
+            '6': { name: 'Smith Wedding', id: 'WED00006', date: '2025-05-10', time: '17:00 - 22:00', venue: 'Riverside Gardens', client: 'Emily Smith', status: 'Confirmed', team: 'DJ Tom, Tech Rachel' },
+            '7': { name: 'Patel Baarat', id: 'BAA00007', date: '2025-05-15', time: '15:00 - 20:00', venue: 'City Park', client: 'Amit Patel', status: 'Quoted', team: 'DJ Neil, Tech Karen' }
+        };
+
+        // Equipment data for inventory tab
+        const equipmentData = {
+            '1': [
+                { name: 'Chauvet MH23 Moving Head', quantity: 4, loadedQty: 4, loaded: true },
+                { name: 'L-Acoustics L300 Series', quantity: 2, loadedQty: 2, loaded: true },
+                { name: 'Shure SM58 Microphone', quantity: 3, loadedQty: 3, loaded: true },
+                { name: 'LED Uplights', quantity: 10, loadedQty: 1, loaded: false },
+                { name: 'Audio Mixer', quantity: 1, loadedQty: 0, loaded: false },
+                { name: 'Speaker Stands', quantity: 4, loadedQty: 0, loaded: false }
+            ],
+            '2': [
+                { name: 'Chauvet MH23 Moving Head', quantity: 2, loadedQty: 2, loaded: true },
+                { name: 'Portable Speakers', quantity: 2, loadedQty: 2, loaded: true },
+                { name: 'Wireless Microphone', quantity: 1, loadedQty: 1, loaded: true },
+                { name: 'Projector', quantity: 1, loadedQty: 0, loaded: false },
+                { name: 'Power Cables', quantity: 5, loadedQty: 0, loaded: false }
+            ],
+            '3': [
+                { name: 'L-Acoustics L300 Series', quantity: 1, loadedQty: 1, loaded: true },
+                { name: 'LED Uplights', quantity: 10, loadedQty: 5, loaded: false },
+                { name: 'Drum Kit', quantity: 1, loadedQty: 1, loaded: true },
+                { name: 'Stage Lighting Kit', quantity: 2, loadedQty: 1, loaded: false },
+                { name: 'Extension Cords', quantity: 3, loadedQty: 0, loaded: false }
+            ],
+            '4': [
+                { name: 'DJ Mixer', quantity: 1, loadedQty: 0, loaded: false },
+                { name: 'LED Strobe Lights', quantity: 4, loadedQty: 0, loaded: false },
+                { name: 'Speakers', quantity: 2, loadedQty: 0, loaded: false },
+                { name: 'Microphones', quantity: 2, loadedQty: 0, loaded: false },
+                { name: 'Cables', quantity: 5, loadedQty: 0, loaded: false }
+            ],
+            '5': [
+                { name: 'Projector', quantity: 2, loadedQty: 1, loaded: false },
+                { name: 'Speakers', quantity: 4, loadedQty: 2, loaded: false },
+                { name: 'Microphones', quantity: 3, loadedQty: 0, loaded: false },
+                { name: 'LED Uplights', quantity: 8, loadedQty: 0, loaded: false },
+                { name: 'Cables', quantity: 5, loadedQty: 0, loaded: false }
+            ],
+            '6': [
+                { name: 'Chauvet MH23 Moving Head', quantity: 6, loadedQty: 6, loaded: true },
+                { name: 'L-Acoustics L300 Series', quantity: 3, loadedQty: 3, loaded: true },
+                { name: 'Shure SM58 Microphone', quantity: 4, loadedQty: 3, loaded: false },
+                { name: 'LED Uplights', quantity: 12, loadedQty: 0, loaded: false },
+                { name: 'Audio Mixer', quantity: 1, loadedQty: 0, loaded: false },
+                { name: 'Speaker Stands', quantity: 5, loadedQty: 0, loaded: false }
+            ],
+            '7': [
+                { name: 'L-Acoustics L300 Series', quantity: 2, loadedQty: 0, loaded: false },
+                { name: 'LED Uplights', quantity: 8, loadedQty: 0, loaded: false },
+                { name: 'Drum Kit', quantity: 1, loadedQty: 0, loaded: false },
+                { name: 'Stage Lighting Kit', quantity: 3, loadedQty: 0, loaded: false }
+            ]
+        };
+
+        // Task data for tasks tab (linked across the app)
+        const taskData = {
+            '1': [
+                { title: 'Follow up on quote', description: 'Call client to confirm details', priority: 'High', dueDate: '2025-04-10' },
+                { title: 'Confirm client meeting', description: 'Schedule a meeting to discuss event details', priority: 'Medium', dueDate: '2025-04-12' },
+                { title: 'Prepare equipment list', description: 'List all required equipment for the event', priority: 'Low', dueDate: '2025-04-13' }
+            ],
+            '2': [
+                { title: 'Book venue', description: 'Reserve the community center', priority: 'High', dueDate: '2025-04-15' },
+                { title: 'Order decorations', description: 'Purchase decorations for the baby shower', priority: 'Medium', dueDate: '2025-04-16' }
+            ],
+            '3': [
+                { title: 'Arrange transportation', description: 'Book vehicles for the procession', priority: 'High', dueDate: '2025-03-25' },
+                { title: 'Hire musicians', description: 'Confirm band for the ceremony', priority: 'Medium', dueDate: '2025-03-26' }
+            ],
+            '4': [
+                { title: 'Confirm booking', description: 'Verify club booking', priority: 'High', dueDate: '2025-04-20' },
+                { title: 'Set up lighting', description: 'Install lighting for the event', priority: 'Medium', dueDate: '2025-04-22' }
+            ],
+            '5': [
+                { title: 'Send proposal', description: 'Email proposal to Tech Corp', priority: 'High', dueDate: '2025-04-25' },
+                { title: 'Book venue', description: 'Reserve convention center', priority: 'Medium', dueDate: '2025-04-26' }
+            ],
+            '6': [
+                { title: 'Meet with client', description: 'Discuss event details with Emily Smith', priority: 'High', dueDate: '2025-05-05' },
+                { title: 'Order flowers', description: 'Purchase flowers for the wedding', priority: 'Medium', dueDate: '2025-05-06' }
+            ],
+            '7': [
+                { title: 'Plan route', description: 'Map out procession route', priority: 'High', dueDate: '2025-05-10' },
+                { title: 'Hire band', description: 'Book a band for the baarat', priority: 'Medium', dueDate: '2025-05-11' }
+            ]
+        };
+
+        // Schedule data with private field
+        const scheduleData = {
+            '1': [
+                { title: 'Ceremony', time: '18:00 - 18:30', cueLink: '01', private: false },
+                { title: 'Dinner', time: '18:30 - 19:30', cueLink: '02', private: false },
+                { title: 'Dance Party', time: '19:30 - 22:30', cueLink: '03', private: false }
+            ],
+            '2': [
+                { title: 'Welcome', time: '14:00 - 14:15', cueLink: 'None', private: false },
+                { title: 'Games', time: '14:15 - 15:30', cueLink: 'None', private: false },
+                { title: 'Gift Opening', time: '15:30 - 16:00', cueLink: 'None', private: false }
+            ],
+            '3': [
+                { title: 'Procession', time: '18:00 - 19:00', cueLink: 'None', private: false },
+                { title: 'Ceremony', time: '19:00 - 20:00', cueLink: 'None', private: false },
+                { title: 'Celebration', time: '20:00 - 22:00', cueLink: 'None', private: false }
+            ],
+            '4': [
+                { title: 'Doors Open', time: '20:00 - 20:30', cueLink: 'None', private: false },
+                { title: 'Main Set', time: '20:30 - 22:30', cueLink: 'None', private: false },
+                { title: 'Closing', time: '22:30 - 23:00', cueLink: 'None', private: false }
+            ],
+            '5': [
+                { title: 'Reception', time: '19:00 - 19:30', cueLink: 'None', private: false },
+                { title: 'Dinner', time: '19:30 - 20:30', cueLink: 'None', private: false },
+                { title: 'Speeches', time: '20:30 - 22:00', cueLink: 'None', private: false }
+            ],
+            '6': [
+                { title: 'Ceremony', time: '17:00 - 17:30', cueLink: 'None', private: false },
+                { title: 'Reception', time: '17:30 - 18:30', cueLink: 'None', private: false },
+                { title: 'Dance Party', time: '18:30 - 22:00', cueLink: 'None', private: false }
+            ],
+            '7': [
+                { title: 'Procession', time: '15:00 - 16:00', cueLink: 'None', private: false },
+                { title: 'Ceremony', time: '16:00 - 17:00', cueLink: 'None', private: false },
+                { title: 'Celebration', time: '17:00 - 20:00', cueLink: 'None', private: false }
+            ]
+        };
+
+        // Cue data with share field
+        const cueData = {
+            '1': [
+                { name: 'Intro Song at 18:05, 00:30', number: '01', share: true },
+                { name: 'First Dance Song at 19:00, 01:15', number: '02', share: true },
+                { name: 'Cake Cutting Song at 20:00, 02:00', number: '03', share: true }
+            ],
+            '2': [],
+            '3': [],
+            '4': [],
+            '5': [],
+            '6': [],
+            '7': []
+        };
+
+        // Available inventory items for the "Add Inventory" modal
+        const availableInventory = [
+            { name: 'Chauvet MH23 Moving Head', code: 'LIG001', category: 'Lighting' },
+            { name: 'L-Acoustics L300 Series', code: 'SOU002', category: 'Sound' },
+            { name: 'Shure SM58 Microphone', code: 'MIC001', category: 'Sound' },
+            { name: 'LED Uplights', code: 'LIG002', category: 'Lighting' },
+            { name: 'Audio Mixer', code: 'MIX001', category: 'Sound' },
+            { name: 'Speaker Stands', code: 'STA001', category: 'Accessories' }
+        ];
+
+        let cueCounter = 3; // Start from 3 based on initial cues
+        let selectedItem = null; // To store the selected item from global search
+
+        // Navigation Functions
+        function goBack() {
+            window.location.href = 'events.html';
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('menuDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        function sendLink() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id');
+            if (eventId) {
+                const link = `http://localhost:5500/checklist_form.html?eventId=${eventId}`;
+                navigator.clipboard.writeText(link).then(() => {
+                    alert('Link copied to clipboard: ' + link + '\nShare this with your client!');
+                }).catch(err => {
+                    alert('Failed to copy link: ' + err);
+                });
+                toggleDropdown();
+            }
+        }
+
+        function syncCalendar() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id') || '1'; // Default to '1' if no ID provided
+            const event = eventData[eventId];
+            const tasks = taskData[eventId] || [];
+
+            if (tasks.length === 0) {
+                alert('No tasks to sync for this event.');
+                toggleDropdown();
+                return;
+            }
+
+            // Create iCalendar content
+            let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//xAI//OneXDJ//EN
+CALSCALE:GREGORIAN
+`;
+
+            tasks.forEach(task => {
+                const startDate = new Date(task.dueDate + 'T00:00:00'); // Assume all-day event starting at 00:00
+                const endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 1); // End date is the next day for all-day events
+
+                // Format dates in iCalendar format (YYYYMMDD)
+                const startDateStr = startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                const endDateStr = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+                icsContent += `BEGIN:VEVENT
+UID:${eventId}-${task.title.replace(/\s/g, '-')}-${startDateStr}@onexdj.xai
+DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'}
+DTSTART:${startDateStr}
+DTEND:${endDateStr}
+SUMMARY:${task.title}
+DESCRIPTION:${task.description}\\nPriority: ${task.priority}
+END:VEVENT
+`;
+            });
+
+            icsContent += `END:VCALENDAR`;
+
+            // Create a Blob and download the .ics file
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `tasks-${eventId}.ics`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            alert('Tasks have been exported as an iCalendar (.ics) file. Import this file into your preferred calendar app (e.g., Google Calendar, iPhone Calendar) to sync the tasks.');
+            toggleDropdown();
+        }
+
+        function shareSchedule() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id');
+            if (eventId) {
+                const link = `http://localhost:5500/schedule_share.html?eventId=${eventId}`;
+                navigator.clipboard.writeText(link).then(() => {
+                    alert('Schedule link copied to clipboard: ' + link + '\nShare this with your client to review the event agenda. They can contact you to confirm or suggest changes.');
+                }).catch(err => {
+                    alert('Failed to copy link: ' + err);
+                });
+                toggleDropdown();
+            }
+        }
+
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-nav button');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab-nav button[onclick="showTab('${tabId}')"]`).classList.add('active');
+        }
+
+        // Event Details Functions
+        function loadEventDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id') || '1'; // Default to '1' if no ID provided
+            const event = eventData[eventId];
+            if (event) {
+                document.getElementById('eventDetails').innerHTML = `
+                    <h2>${event.name}</h2>
+                    <div class="event-meta">
+                        <div><i class="fas fa-calendar-alt"></i> ${event.date}</div>
+                        <div><i class="fas fa-clock"></i> ${event.time}</div>
+                    </div>
+                    <div class="event-meta">
+                        <div><i class="fas fa-map-marker-alt"></i> ${event.venue}</div>
+                    </div>
+                    <div class="event-team">
+                        <i class="fas fa-users"></i> ${event.team || 'No team assigned'}
+                    </div>
+                    <div class="event-team">
+                        Status: ${event.status}
+                    </div>
+                    <div class="event-actions">
+                        <button class="btn" onclick="editEvent('${eventId}')"><i class="fas fa-edit"></i> Edit Event</button>
+                        <button class="btn btn-message" onclick="messageClient()"><i class="fas fa-envelope"></i> Message Client</button>
+                    </div>
+                `;
+            } else {
+                document.getElementById('eventDetails').innerHTML = '<p>Event not found</p>';
+            }
+        }
+
+        function editEvent(eventId) {
+            window.location.href = `create_event.html?id=${eventId}`;
+        }
+
+        function messageClient() {
+            console.log('Messaging client...');
+        }
+
+        // Inventory Functions
+        function loadInventory() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id') || '1'; // Default to '1' if no ID provided
+            const equipment = equipmentData[eventId] || [];
+            const inventoryList = document.getElementById('inventoryList');
+            inventoryList.innerHTML = '';
+            if (equipment.length === 0) {
+                inventoryList.innerHTML = '<li>No inventory items found.</li>';
+                return;
+            }
+            equipment.forEach((item, index) => {
+                const statusClass = item.loaded ? 'loaded' : item.loadedQty > 0 ? 'partial' : '';
+                const percentage = (item.loadedQty / item.quantity) * 100;
+                const dashOffset = 62.8 - (percentage / 100) * 62.8;
+                const li = document.createElement('li');
+                li.className = `inventory-item ${statusClass}`;
+                li.innerHTML = `
+                    <div class="inventory-details">
+                        <div class="icon-wrapper">
+                            <svg class="progress-circle" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke-dashoffset="${dashOffset}"/>
+                            </svg>
+                            <span class="icon">📦</span>
+                        </div>
+                        ${item.name}: ${item.loadedQty}/${item.quantity} units
+                    </div>
+                    <div class="inventory-status ${statusClass}">
+                        ${item.loaded ? 'Loaded ✓' : item.loadedQty > 0 ? 'Partially Loaded ⚠️' : 'Not Loaded'}
+                    </div>
+                `;
+                inventoryList.appendChild(li);
+            });
+        }
+
+        function showAddInventoryModal() {
+            document.getElementById('addInventoryModal').style.display = 'flex';
+            document.getElementById('itemCategory').value = '';
+            document.getElementById('globalSearch').value = '';
+            document.getElementById('itemQuantity').value = '1';
+            document.getElementById('initialStatus').value = 'not-loaded';
+            selectedItem = null;
+            document.getElementById('suggestionsList').style.display = 'none';
+            filterItemsByCategory(); // Reset suggestions
+        }
+
+        function closeAddInventoryModal() {
+            document.getElementById('addInventoryModal').style.display = 'none';
+            document.getElementById('suggestionsList').style.display = 'none';
+        }
+
+        function filterItemsByCategory() {
+            const category = document.getElementById('itemCategory').value;
+            const searchTerm = document.getElementById('globalSearch').value.toLowerCase();
+            const suggestionsList = document.getElementById('suggestionsList');
+            suggestionsList.innerHTML = '';
+            const filteredItems = availableInventory.filter(item => {
+                const matchesCategory = !category || item.category === category;
+                const matchesSearch = !searchTerm || item.name.toLowerCase().includes(searchTerm);
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filteredItems.length > 0 && searchTerm) {
+                filteredItems.forEach(item => {
+                    const div = document.createElement('div');
+                    div.textContent = item.name;
+                    div.dataset.name = item.name;
+                    div.dataset.code = item.code;
+                    div.dataset.category = item.category;
+                    div.onclick = () => selectItem(item);
+                    suggestionsList.appendChild(div);
+                });
+                suggestionsList.style.display = 'block';
+            } else {
+                suggestionsList.style.display = 'none';
+            }
+        }
+
+        function filterGlobalSearch() {
+            filterItemsByCategory();
+        }
+
+        function selectItem(item) {
+            selectedItem = item;
+            document.getElementById('globalSearch').value = item.name;
+            document.getElementById('suggestionsList').style.display = 'none';
+        }
+
+        function addInventoryItem() {
+            const itemName = selectedItem ? selectedItem.name : null;
+            const itemCode = selectedItem ? selectedItem.code : null;
+            const quantity = parseInt(document.getElementById('itemQuantity').value);
+            const initialStatus = document.getElementById('initialStatus').value;
+
+            if (!itemName || quantity <= 0) {
+                alert('Please select an item and enter a valid quantity.');
+                return;
+            }
+
+            const loadedQty = initialStatus === 'loaded' ? quantity : initialStatus === 'partially-loaded' ? Math.floor(quantity / 2) : 0;
+            const statusClass = initialStatus === 'loaded' ? 'loaded' : initialStatus === 'partially-loaded' ? 'partial' : '';
+            const percentage = (loadedQty / quantity) * 100;
+            const dashOffset = 62.8 - (percentage / 100) * 62.8;
+
+            const inventoryList = document.getElementById('inventoryList');
+            const li = document.createElement('li');
+            li.className = `inventory-item ${statusClass}`;
+            li.innerHTML = `
+                <div class="inventory-details">
+                    <div class="icon-wrapper">
+                        <svg class="progress-circle" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke-dashoffset="${dashOffset}"/>
+                        </svg>
+                        <span class="icon">📦</span>
+                    </div>
+                    ${itemName}: ${loadedQty}/${quantity} units
+                </div>
+                <div class="inventory-status ${statusClass}">
+                    ${initialStatus === 'loaded' ? 'Loaded ✓' : initialStatus === 'partially-loaded' ? 'Partially Loaded ⚠️' : 'Not Loaded'}
+                </div>
+            `;
+            inventoryList.insertBefore(li, inventoryList.querySelector('.inventory-actions'));
+            closeAddInventoryModal();
+        }
+
+        function showLoadEquipmentModal() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id') || '1'; // Default to '1' if no ID provided
+            const equipment = equipmentData[eventId] || [];
+            const loadList = document.getElementById('loadEquipmentList');
+            loadList.innerHTML = '';
+            if (equipment.length === 0) {
+                loadList.innerHTML = '<li>No equipment items found.</li>';
+            } else {
+                equipment.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'modal-load-item';
+                    li.innerHTML = `
+                        <div class="modal-load-item-header">
+                            <input type="checkbox" id="loadItem-${index}" data-index="${index}">
+                            <div class="modal-load-item-details">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-status">Current: ${item.loadedQty}/${item.quantity} units</div>
+                            </div>
+                        </div>
+                        <div class="modal-load-item-quantity">
+                            <label for="loadedQty-${index}">Load Quantity:</label>
+                            <input type="number" id="loadedQty-${index}" min="0" max="${item.quantity}" value="${item.loadedQty}" data-index="${index}">
+                        </div>
+                    `;
+                    loadList.appendChild(li);
+                });
+            }
+            document.getElementById('loadEquipmentModal').style.display = 'flex';
+        }
+
+        function closeLoadEquipmentModal() {
+            document.getElementById('loadEquipmentModal').style.display = 'none';
+        }
+
+        function loadSelectedEquipment() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id') || '1'; // Default to '1' if no ID provided
+            const equipment = equipmentData[eventId] || [];
+            const checkboxes = document.querySelectorAll('#loadEquipmentList input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                alert('Please select at least one item to load.');
+                return;
+            }
+            checkboxes.forEach(checkbox => {
+                const index = parseInt(checkbox.dataset.index);
+                const loadedQtyInput = document.getElementById(`loadedQty-${index}`);
+                const loadedQty = parseInt(loadedQtyInput.value);
+                if (equipment[index]) {
+                    equipment[index].loadedQty = Math.min(Math.max(loadedQty, 0), equipment[index].quantity); // Clamp between 0 and quantity
+                    equipment[index].loaded = equipment[index].loadedQty === equipment[index].quantity;
+                }
+            });
+            closeLoadEquipmentModal();
+            loadInventory(); // Refresh the inventory display
+        }
+
+        // Task Functions
+        function loadTasks() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id') || '1'; // Default to '1' if no ID provided
+            const tasks = taskData[eventId] || [];
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            if (tasks.length === 0) {
+                taskList.innerHTML = '<li>No tasks found.</li>';
+                return;
+            }
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'task-item';
+                li.innerHTML = `
+                    <div class="task-details">
+                        <div class="task-title">${task.title}</div>
+                        <div class="task-description">${task.description}</div>
+                    </div>
+                    <div class="task-meta">
+                        <div class="task-priority ${task.priority.toLowerCase()}">Priority: ${task.priority}</div>
+                        <div>Due: ${task.dueDate}</div>
+                    </div>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        function showAddTaskModal() {
+            document.getElementById('addTaskModal').style.display = 'flex';
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('taskPriority').value = '';
+            document.getElementById('taskDueDate').value = '';
+        }
+
+        function closeAddTaskModal() {
+            document.getElementById('addTaskModal').style.display = 'none';
+        }
+
+        function addTask() {
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const priority = document.getElementById('taskPriority').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+
+            if (!title || !description || !priority || !dueDate) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id') || '1'; // Default to '1' if no ID provided
+
+            if (!taskData[eventId]) {
+                taskData[eventId] = [];
+            }
+
+            taskData[eventId].push({ title, description, priority, dueDate });
+            loadTasks();
+            closeAddTaskModal();
+        }
+
+        // Schedule Functions
+        function loadSchedule() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id') || '1'; // Default to '1' if no ID provided
+            const schedule = scheduleData[eventId] || [];
+            const scheduleList = document.getElementById('scheduleList');
+            scheduleList.innerHTML = '';
+
+            if (schedule.length === 0) {
+                scheduleList.innerHTML = '<p>No schedule items found.</p>';
+                return;
+            }
+
+            schedule.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'section-card';
+                div.innerHTML = `
+                    <h3>${item.title}</h3>
+                    <p>${item.time}</p>
+                    <div class="cue-link">Cue Link: ${item.cueLink}</div>
+                `;
+                scheduleList.appendChild(div);
+            });
+        }
+
+        function showAddSectionModal() {
+            document.getElementById('addSectionModal').style.display = 'flex';
+            populateCueDropdown();
+            // Reset form fields
+            document.getElementById('sectionTitle').value = '';
+            document.getElementById('sectionStartTime').value = '';
+            document.getElementById('sectionEndTime').value = '';
+            document.getElementById('cueLink').value = '';
+            document.getElementById('sectionPrivate').checked = false;
+        }
+
+        function closeAddSectionModal() {
+            document.getElementById('addSectionModal').style.display = 'none';
+        }
+
+        function populateCueDropdown() {
+            const cueDropdown = document.getElementById('cueLink');
+            cueDropdown.innerHTML = '<option value="">Select Cue</option>';
+            const cueItems = document.querySelectorAll('#cue .cue-item p');
+            cueItems.forEach((item, index) => {
+                const cueNumber = String(index + 1).padStart(2, '0');
+                const option = document.createElement('option');
+                option.value = cueNumber;
+                option.text = `${cueNumber}: ${item.textContent.split(' at ')[0]}`;
+                cueDropdown.appendChild(option);
+            });
+        }
+
+        function saveSection() {
+            const title = document.getElementById('sectionTitle').value;
+            const startTime = document.getElementById('sectionStartTime').value;
+            const endTime = document.getElementById('sectionEndTime').value;
+            const cueLink = document.getElementById('cueLink').value;
+            const isPrivate = document.getElementById('sectionPrivate').checked;
+
+            if (title && startTime && endTime) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const eventId = urlParams.get('id') || '1';
+
+                if (!scheduleData[eventId]) {
+                    scheduleData[eventId] = [];
+                }
+
+                scheduleData[eventId].push({
+                    title: title,
+                    time: `${startTime} - ${endTime}`,
+                    cueLink: cueLink || 'None',
+                    private: isPrivate
+                });
+
+                loadSchedule();
+                closeAddSectionModal();
+            } else {
+                alert('Please fill in all required fields');
+            }
+        }
+
+        // Cue Functions
+        function loadCues() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id') || '1'; // Default to '1' if no ID provided
+            const cues = cueData[eventId] || [];
+            const cueList = document.getElementById('cueList');
+            cueList.innerHTML = '';
+
+            if (cues.length === 0) {
+                cueList.innerHTML = '<div class="cue-item"><p>No cues assigned.</p></div>';
+                return;
+            }
+
+            cues.forEach(cue => {
+                const div = document.createElement('div');
+                div.className = 'cue-item';
+                div.innerHTML = `<p>${cue.number}: ${cue.name}</p>`;
+                cueList.appendChild(div);
+            });
+        }
+
+        function showAddCueModal() {
+            document.getElementById('addCueModal').style.display = 'flex';
+            document.getElementById('songName').value = '';
+            document.getElementById('scheduledTime').value = '';
+            document.getElementById('songTimestamp').value = '';
+            document.getElementById('cueShare').checked = false;
+        }
+
+        function closeAddCueModal() {
+            document.getElementById('addCueModal').style.display = 'none';
+        }
+
+        function saveCue() {
+            cueCounter++;
+            const cueNumber = String(cueCounter).padStart(2, '0');
+            const songName = document.getElementById('songName').value;
+            const scheduledTime = document.getElementById('scheduledTime').value;
+            const songTimestamp = document.getElementById('songTimestamp').value;
+            const shouldShare = document.getElementById('cueShare').checked;
+
+            if (songName && scheduledTime && songTimestamp) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const eventId = urlParams.get('id') || '1';
+
+                if (!cueData[eventId]) {
+                    cueData[eventId] = [];
+                }
+
+                cueData[eventId].push({
+                    name: `${songName} at ${scheduledTime}, ${songTimestamp}`,
+                    number: cueNumber,
+                    share: shouldShare
+                });
+
+                loadCues();
+                populateCueDropdown(); // Update dropdown after adding a new cue
+                closeAddCueModal();
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        // Load Team Data
+        function loadTeam() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id') || '1'; // Default to '1' if no ID provided
+            const event = eventData[eventId];
+            if (event) {
+                document.getElementById('team').innerHTML = event.team ? event.team.split(', ').map(member => `
+                    <div class="team-member">
+                        <p>${member.trim()}</p>
+                    </div>
+                `).join('') : '<p>No team assigned</p>';
+            } else {
+                document.getElementById('team').innerHTML = '<p>No team assigned</p>';
+            }
+        }
+
+        function loadPage(page) {
+            console.log(`Loading ${page} page`);
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEventDetails();
+            loadInventory();
+            loadTasks();
+            loadTeam();
+            loadSchedule();
+            loadCues();
+
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('menuDropdown');
+                if (!e.target.classList.contains('menu-dot') && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+                // Close suggestions list if clicking outside
+                const suggestionsList = document.getElementById('suggestionsList');
+                const globalSearch = document.getElementById('globalSearch');
+                if (suggestionsList && !globalSearch.contains(e.target) && !suggestionsList.contains(e.target)) {
+                    suggestionsList.style.display = 'none';
+                }
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('addSectionModal').contains(e.target) && !e.target.classList.contains('add-section-btn') && document.getElementById('addSectionModal').style.display === 'flex') {
+                closeAddSectionModal();
+            }
+            if (!document.getElementById('addInventoryModal').contains(e.target) && !e.target.classList.contains('add-section-btn') && document.getElementById('addInventoryModal').style.display === 'flex') {
+                closeAddInventoryModal();
+            }
+            if (!document.getElementById('loadEquipmentModal').contains(e.target) && !e.target.classList.contains('load-btn') && document.getElementById('loadEquipmentModal').style.display === 'flex') {
+                closeLoadEquipmentModal();
+            }
+            if (!document.getElementById('addTaskModal').contains(e.target) && !e.target.classList.contains('add-section-btn') && document.getElementById('addTaskModal').style.display === 'flex') {
+                closeAddTaskModal();
+            }
+            if (!document.getElementById('addCueModal').contains(e.target) && !e.target.classList.contains('add-section-btn') && document.getElementById('addCueModal').style.display === 'flex') {
+                closeAddCueModal();
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>
